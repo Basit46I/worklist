@@ -1,14 +1,28 @@
-import { z } from "zod";
-import type { ValidatedApiEnvironment } from "../types/index.js";
+import { z } from 'zod'
+import type { ValidatedApiEnvironment } from '../types/index.js'
 
-export const apiEnvironmentSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]),
-  API_HOST: z.string().min(1),
-  API_PORT: z.coerce.number().int().min(1).max(65_535),
-  WEB_ORIGIN: z.url(),
-  MONGODB_URI: z.string().min(1).optional(),
-  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
-}) satisfies z.ZodType<ValidatedApiEnvironment>;
+export const apiEnvironmentSchema = z
+    .object({
+        NODE_ENV: z.enum(['development', 'test', 'production']),
+        API_HOST: z.string().min(1),
+        API_PORT: z.coerce.number().int().min(1).max(65_535),
+        WEB_ORIGIN: z.url(),
+        MONGODB_URI: z.string().min(1).optional(),
+        SMTP_HOST: z.string().min(1).optional(),
+        SMTP_PORT: z.coerce.number().int().min(1).max(65_535).optional(),
+        SMTP_USER: z.string().min(1).optional(),
+        SMTP_PASSWORD: z.string().min(1).optional(),
+        EMAIL_FROM: z.string().min(3).optional(),
+        LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
+    })
+    .superRefine((value, context) => {
+        const smtpValues = [value.SMTP_HOST, value.SMTP_PORT, value.SMTP_USER, value.SMTP_PASSWORD, value.EMAIL_FROM]
+        if (smtpValues.some((entry) => entry !== undefined) && smtpValues.some((entry) => entry === undefined)) {
+            context.addIssue({
+                code: 'custom',
+                message: 'SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, and EMAIL_FROM must be configured together.'
+            })
+        }
+    }) satisfies z.ZodType<ValidatedApiEnvironment>
 
-export const validateApiEnvironment = (input: unknown): ValidatedApiEnvironment =>
-  Object.freeze(apiEnvironmentSchema.parse(input));
+export const validateApiEnvironment = (input: unknown): ValidatedApiEnvironment => Object.freeze(apiEnvironmentSchema.parse(input))

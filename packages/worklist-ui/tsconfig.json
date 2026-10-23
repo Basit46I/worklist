@@ -1,0 +1,14 @@
+{
+    "extends": "@workspace/tsconfig/node.json",
+    "compilerOptions": {
+        "lib": ["DOM", "DOM.Iterable", "ES2022"],
+        "jsx": "react-jsx",
+        "types": ["node"],
+        "paths": {
+            "@workspace/worklist-ui": ["./src/index.ts"],
+            "@workspace/worklist-ui/*": ["./src/*"]
+        }
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["dist", "node_modules"]
+}

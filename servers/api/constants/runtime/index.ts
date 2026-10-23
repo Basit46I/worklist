@@ -1,1 +1,1 @@
-export { apiRuntime } from "./api.js";
+export { apiRuntime } from './api.js'

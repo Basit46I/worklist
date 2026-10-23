@@ -1,22 +1,35 @@
-import type { ReactElement } from "react";
-import { Activity } from "lucide-react";
-import { PageHeader, PageShell } from "@workspace/ui";
-import { ApiBoundary } from "./api-boundary";
-import { RuntimeFoundation } from "./runtime-foundation";
+import type { ReactElement } from 'react'
+import { Activity, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { Button, PageHeader, PageShell } from '@workspace/ui'
+import { ApiBoundary } from './api-boundary'
+import { RuntimeFoundation } from './runtime-foundation'
 
 type WorkspaceFoundationProps = Readonly<{
-  apiBaseUrl: string;
-}>;
+    apiBaseUrl: string
+}>
 
 export const WorkspaceFoundation = ({ apiBaseUrl }: WorkspaceFoundationProps): ReactElement => (
-  <PageShell>
-    <PageHeader
-      description="Web and API runtimes are configured as separate workspace units and ready for the first vertical slice."
-      eyebrow="Workspace ready"
-      icon={<Activity aria-hidden="true" className="size-5" />}
-      title="The application foundation is running."
-    />
-    <RuntimeFoundation />
-    <ApiBoundary baseUrl={apiBaseUrl} />
-  </PageShell>
-);
+    <PageShell>
+        <PageHeader
+            description="Create a team workspace, then plan, sort, and track its tasks in one shared list."
+            eyebrow="Worklist"
+            icon={
+                <Activity
+                    aria-hidden="true"
+                    className="size-5"
+                />
+            }
+            title="A clear view of your team's work."
+        />
+        <RuntimeFoundation />
+        <div className="mb-8">
+            <Button asChild>
+                <Link href="/worklist">
+                    Open Worklist <ArrowRight aria-hidden="true" />
+                </Link>
+            </Button>
+        </div>
+        <ApiBoundary baseUrl={apiBaseUrl} />
+    </PageShell>
+)

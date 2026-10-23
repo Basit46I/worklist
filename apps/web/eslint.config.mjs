@@ -1,3 +1,3 @@
-import { createNextConfig } from "@workspace/eslint-config/next";
+import { createNextConfig } from '@workspace/eslint-config/next'
 
-export default createNextConfig({ tsconfigRootDir: import.meta.dirname });
+export default createNextConfig({ tsconfigRootDir: import.meta.dirname })

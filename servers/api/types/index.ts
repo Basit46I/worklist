@@ -1,1 +1,1 @@
-export type { ApiConfig, ApiEnvironmentSource, ValidatedApiEnvironment } from "./configuration/index.js";
+export type { ApiConfig, ApiEnvironmentSource, ValidatedApiEnvironment } from './configuration/index.js'

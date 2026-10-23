@@ -1,1 +1,1 @@
-export { runTruffleHogScan as runSecretScan } from "./trufflehog.mjs";
+export { runTruffleHogScan as runSecretScan } from './trufflehog.mjs'

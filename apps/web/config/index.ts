@@ -1,2 +1,2 @@
-export { createApiConfiguration } from "./api";
-export { readWebEnvironment } from "./env";
+export { createApiConfiguration } from './api'
+export { readWebEnvironment } from './env'

@@ -1,7 +1,7 @@
-import type { ApiEnvironment } from "../environment/index.js";
+import type { ApiEnvironment } from '../environment/index.js'
 
 export type ApiHealthResponse = Readonly<{
-  status: "ok";
-  service: string;
-  environment: ApiEnvironment;
-}>;
+    status: 'ok'
+    service: string
+    environment: ApiEnvironment
+}>

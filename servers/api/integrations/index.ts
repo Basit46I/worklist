@@ -1,2 +1,5 @@
-export { createMongoDbIntegration } from "./mongodb/index.js";
-export type { MongoClient, MongoDbIntegration } from "./mongodb/index.js";
+export { createMongoDbIntegration } from './mongodb/index.js'
+export { mongoose, Types } from './mongodb/index.js'
+export type { Model, MongoClient, MongoDbIntegration } from './mongodb/index.js'
+export { createSmtpEmailSender } from './email/index.js'
+export type { EmailMessage, EmailSender, SmtpConfig } from './email/index.js'

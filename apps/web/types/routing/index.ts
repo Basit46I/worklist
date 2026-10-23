@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 export type RootLayoutProps = Readonly<{
-  children: ReactNode;
-}>;
+    children: ReactNode
+}>
 
 export type ErrorPageProps = Readonly<{
-  error: Error & { digest?: string };
-  reset: () => void;
-}>;
+    error: Error & { digest?: string }
+    reset: () => void
+}>

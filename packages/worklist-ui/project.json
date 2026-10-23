@@ -1,0 +1,13 @@
+{
+    "name": "worklist-ui",
+    "type": "package",
+    "description": "Reusable Worklist UI library: list and board views, controls, authentication, and workspace shell.",
+    "internalDependencies": ["eslint-config", "tsconfig", "ui"],
+    "externalDependencies": ["@tanstack/react-virtual", "lucide-react", "react"],
+    "capabilities": ["worklist-ui", "list-view", "board-view", "auth-screen", "workspace-shell"],
+    "tasks": {
+        "build": { "command": "pnpm run build", "outputs": ["dist"], "cache": true },
+        "lint": { "command": "pnpm run lint", "cache": false },
+        "typecheck": { "command": "pnpm run typecheck", "cache": false }
+    }
+}

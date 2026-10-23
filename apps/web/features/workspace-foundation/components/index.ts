@@ -1,1 +1,1 @@
-export { WorkspaceFoundation } from "./workspace-foundation";
+export { WorkspaceFoundation } from './workspace-foundation'

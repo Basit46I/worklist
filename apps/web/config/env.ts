@@ -1,10 +1,9 @@
-import {
-  validateWebEnvironment
-} from "@/validation/env.validation";
-import type { ValidatedWebEnvironment, WebEnvironmentSource } from "@/types";
+import { validateWebEnvironment } from '@/validation/env.validation'
+import type { ValidatedWebEnvironment, WebEnvironmentSource } from '@/types'
 
-export const readWebEnvironment = (
-  source: WebEnvironmentSource = process.env
-): ValidatedWebEnvironment => validateWebEnvironment({
-  NEXT_PUBLIC_API_BASE_URL: source.NEXT_PUBLIC_API_BASE_URL
-});
+export const readWebEnvironment = (source: WebEnvironmentSource = process.env): ValidatedWebEnvironment =>
+    validateWebEnvironment({
+        NEXT_PUBLIC_API_BASE_URL:
+            source.NEXT_PUBLIC_API_BASE_URL ??
+            (source === process.env && process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : undefined)
+    })

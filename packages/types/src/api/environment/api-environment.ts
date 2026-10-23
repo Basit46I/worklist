@@ -1,1 +1,1 @@
-export type ApiEnvironment = "development" | "test" | "production";
+export type ApiEnvironment = 'development' | 'test' | 'production'

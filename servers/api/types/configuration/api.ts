@@ -1,11 +1,12 @@
-import type { LogLevel } from "@workspace/logging";
-import type { ApiEnvironment } from "@workspace/types";
+import type { LogLevel } from '@workspace/logging'
+import type { ApiEnvironment } from '@workspace/types'
 
 export type ApiConfig = Readonly<{
-  environment: ApiEnvironment;
-  host: string;
-  port: number;
-  webOrigin: string;
-  mongodbUri?: string;
-  logLevel: LogLevel;
-}>;
+    environment: ApiEnvironment
+    host: string
+    port: number
+    webOrigin: string
+    mongodbUri?: string
+    smtp?: Readonly<{ host: string; port: number; user: string; password: string; from: string }>
+    logLevel: LogLevel
+}>

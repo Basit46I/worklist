@@ -1,0 +1,45 @@
+{
+    "name": "@workspace/worklist-ui",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./components/*": {
+            "types": "./dist/components/*.d.ts",
+            "import": "./dist/components/*.js",
+            "default": "./dist/components/*.js"
+        },
+        "./styles.css": "./src/styles.css"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "prepare": "pnpm run build",
+        "lint": "eslint \"{src,tests}/**/*.{ts,tsx}\"",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@tanstack/react-virtual": "^3.14.17",
+        "@workspace/ui": "workspace:*",
+        "lucide-react": "^1.46.0",
+        "react": "19.3.0"
+    },
+    "devDependencies": {
+        "@workspace/eslint-config": "workspace:*",
+        "@workspace/tsconfig": "workspace:*",
+        "@types/node": "^22.20.3",
+        "@types/react": "^19.3.0",
+        "eslint": "9.39.5",
+        "typescript": "5.9.3"
+    },
+    "peerDependencies": {
+        "react": "^19.0.0"
+    },
+    "engines": {
+        "node": ">=20.19.0"
+    }
+}

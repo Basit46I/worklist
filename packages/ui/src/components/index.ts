@@ -1,1 +1,1 @@
-export { PageHeader } from "./page-header.js";
+export { PageHeader } from './page-header.js'

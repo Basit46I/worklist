@@ -1,3 +1,3 @@
 export type ApiConfiguration = Readonly<{
-  baseUrl: string;
-}>;
+    baseUrl: string
+}>

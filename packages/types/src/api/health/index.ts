@@ -1,1 +1,1 @@
-export type { ApiHealthResponse } from "./health-response.js";
+export type { ApiHealthResponse } from './health-response.js'

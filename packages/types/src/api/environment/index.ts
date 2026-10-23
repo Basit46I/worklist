@@ -1,1 +1,1 @@
-export type { ApiEnvironment } from "./api-environment.js";
+export type { ApiEnvironment } from './api-environment.js'

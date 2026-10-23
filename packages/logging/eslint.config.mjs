@@ -1,3 +1,3 @@
-import { createNodeConfig } from "@workspace/eslint-config/node";
+import { createNodeConfig } from '@workspace/eslint-config/node'
 
-export default createNodeConfig({ tsconfigRootDir: import.meta.dirname });
+export default createNodeConfig({ tsconfigRootDir: import.meta.dirname })

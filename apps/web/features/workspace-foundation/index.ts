@@ -1,1 +1,1 @@
-export { WorkspaceFoundation } from "./components";
+export { WorkspaceFoundation } from './components'
