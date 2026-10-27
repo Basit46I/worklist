@@ -20,6 +20,7 @@ const config = {
     environment: 'test' as const,
     host: '127.0.0.1',
     port: 0,
+    rateLimit: { max: 1_000, windowMs: 60_000 },
     webOrigin: 'http://localhost:3000',
     logLevel: 'silent' as const
 }

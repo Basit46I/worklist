@@ -5,5 +5,5 @@ export const readWebEnvironment = (source: WebEnvironmentSource = process.env): 
     validateWebEnvironment({
         NEXT_PUBLIC_API_BASE_URL:
             source.NEXT_PUBLIC_API_BASE_URL ??
-            (source === process.env && process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : undefined)
+            (source === process.env && process.env.NODE_ENV === 'development' ? '/api' : undefined)
     })

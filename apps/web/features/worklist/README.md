@@ -32,3 +32,7 @@ The Dashboard composes the saved workspace data into an editable status board, a
 - Work-item reads use cursor pagination (50 by default; API maximum 100), and the table virtualizes rendered rows.
 - Authenticated team refresh events use a process-local server-sent event hub. They refresh connected clients but are not a durable notification inbox and do not support cross-instance delivery.
 - The 10,000-task performance target has not been benchmarked. Measure representative query and render workloads before claiming that target.
+
+## Share a local preview
+
+Install the ngrok CLI and authenticate it with your ngrok account. Then run `node codebase/cli/repo.mjs run web:dev:share` from the repository root. This starts ngrok and both development servers, prints the HTTPS URL, and routes browser API requests through the web app so teammates only need one link. Keep the command running while the preview is in use; stopping it closes the public tunnel. This is a temporary development preview, not a production deployment.

@@ -1,4 +1,4 @@
-export const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000'
+export const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api'
 
 export const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
     const response = await fetch(`${apiBaseUrl}${path}`, {

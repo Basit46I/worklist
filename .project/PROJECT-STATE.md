@@ -6,6 +6,10 @@ M03.2 - First Workspace Bootstrap
 
 STATUS: COMPLETE
 
+SCALABILITY AND QA FOUNDATION UPDATE: 2026-10-26
+
+The API has configurable global and auth rate limits, using per-process memory by default or an optional shared Redis store when `REDIS_URL` is configured. Local smoke and staged stress commands report status counts, throughput, and latency percentiles. API boundary tests cover concurrent bursts, and Redis adapter tests cover scoped stores and lifecycle. Horizontal deployment still needs a real shared Redis instance, a trusted proxy configuration, and cross-instance pub/sub for real-time events; no production host, monitoring, or authenticated database load profile has been selected.
+
 CONTROL PLANE TOOLING RECONCILIATION: 2026-09-17
 
 UI REGISTRY AND TYPESCRIPT RECONCILIATION: 2026-09-17

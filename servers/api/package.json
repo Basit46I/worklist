@@ -7,7 +7,9 @@
         "dev": "tsx watch server.ts",
         "build": "tsc -p tsconfig.build.json",
         "start": "node dist/server.js",
-        "test": "tsx --test features/auth/tests/*.test.ts features/health/tests/*.test.ts features/worklist/tests/*.test.ts tests/environment.test.ts tests/http-boundaries.test.ts tests/mongodb.test.ts tests/shutdown.test.ts",
+        "test": "tsx --test features/auth/tests/*.test.ts features/health/tests/*.test.ts features/worklist/tests/*.test.ts tests/environment.test.ts tests/http-boundaries.test.ts tests/load-check.test.mjs tests/mongodb.test.ts tests/rate-limit-redis.test.ts tests/shutdown.test.ts",
+        "load:smoke": "node scripts/load-check.mjs",
+        "load:stress": "node scripts/load-check.mjs --mode stress",
         "lint": "eslint \"**/*.ts\"",
         "typecheck": "tsc --noEmit"
     },
@@ -19,6 +21,8 @@
         "express-rate-limit": "^8.7.1",
         "mongoose": "^9.10.1",
         "nodemailer": "^10.1.0",
+        "rate-limit-redis": "^6.0.1",
+        "redis": "^6.3.0",
         "zod": "^4.6.5"
     },
     "devDependencies": {

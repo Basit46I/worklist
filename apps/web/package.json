@@ -4,6 +4,7 @@
     "version": "0.1.0",
     "scripts": {
         "dev": "next dev",
+        "dev:share": "node scripts/dev-share.mjs",
         "build": "next build",
         "start": "next start",
         "test": "tsx --test features/worklist/tests/*.test.ts tests/integration/home-page.test.tsx tests/integration/worklist-components.test.tsx tests/environment.test.ts",

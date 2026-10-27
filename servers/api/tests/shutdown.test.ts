@@ -25,10 +25,16 @@ void test('graceful shutdown stops HTTP traffic before disconnecting persistence
                 calls.push('database:disconnect')
                 return Promise.resolve()
             }
+        },
+        rateLimitStore: {
+            disconnect: (): Promise<void> => {
+                calls.push('rate-limit-store:disconnect')
+                return Promise.resolve()
+            }
         }
     })
 
     await shutdown('SIGTERM')
 
-    assert.deepEqual(calls, ['API shutdown requested.:SIGTERM', 'server:stop', 'database:disconnect'])
+    assert.deepEqual(calls, ['API shutdown requested.:SIGTERM', 'server:stop', 'database:disconnect', 'rate-limit-store:disconnect'])
 })

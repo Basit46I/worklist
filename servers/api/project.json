@@ -3,7 +3,7 @@
     "type": "server",
     "description": "Primary Express API runtime.",
     "internalDependencies": ["eslint-config", "logging", "tsconfig", "types"],
-    "externalDependencies": ["dotenv", "express", "express-rate-limit", "mongoose", "nodemailer", "zod"],
+    "externalDependencies": ["dotenv", "express", "express-rate-limit", "mongoose", "nodemailer", "rate-limit-redis", "redis", "zod"],
     "capabilities": ["http-api", "health", "readiness-check", "mongodb-integration", "auth-rate-limiting"],
     "tasks": {
         "dev": {
@@ -11,8 +11,12 @@
             "environment": [
                 "API_HOST",
                 "API_PORT",
+                "API_RATE_LIMIT_MAX",
+                "API_RATE_LIMIT_WINDOW_MS",
+                "API_TRUST_PROXY_HOPS",
                 "WEB_ORIGIN",
                 "MONGODB_URI",
+                "REDIS_URL",
                 "SMTP_HOST",
                 "SMTP_PORT",
                 "SMTP_USER",
@@ -21,6 +25,8 @@
             ],
             "cache": false
         },
+        "load:smoke": { "command": "pnpm run load:smoke", "cache": false },
+        "load:stress": { "command": "pnpm run load:stress", "cache": false },
         "build": { "command": "pnpm run build", "outputs": ["dist"], "cache": true },
         "test": { "command": "pnpm test", "cache": false },
         "lint": { "command": "pnpm run lint", "cache": false },

@@ -7,6 +7,7 @@
   "capabilities": ["web", "app-router", "shadcn-ui", "tailwind"],
   "tasks": {
     "dev": { "command": "pnpm run dev", "cache": false },
+        "dev:share": { "command": "pnpm run dev:share", "environment": ["NGROK_AUTHTOKEN"], "cache": false },
     "build": { "command": "pnpm run build", "outputs": [".next"], "environment": ["NEXT_PUBLIC_API_BASE_URL"], "cache": true },
     "test": { "command": "pnpm test", "cache": false },
     "test:e2e": { "command": "pnpm run test:e2e", "environment": ["WORKLIST_E2E_BASE_URL", "WORKLIST_E2E_EMAIL", "WORKLIST_E2E_PASSWORD"], "cache": false },

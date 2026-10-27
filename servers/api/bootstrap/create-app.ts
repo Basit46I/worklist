@@ -8,14 +8,22 @@ import { createWorkItemRoutes } from '../features/worklist/index.js'
 import { createWorkItemEventHub } from '../features/worklist/index.js'
 import { createSmtpEmailSender } from '../integrations/index.js'
 import type { MongoDbIntegration } from '../integrations/index.js'
-import { createCorsMiddleware, createErrorHandler, createNotFoundHandler, createRequestTelemetry } from '../middleware/index.js'
+import type { RateLimitStoreFactory } from '../integrations/index.js'
+import { createApiRateLimit, createCorsMiddleware, createErrorHandler, createNotFoundHandler, createRequestTelemetry } from '../middleware/index.js'
 
-type AppDependencies = Readonly<{ config: ApiConfig; logger: Logger; database?: Pick<MongoDbIntegration, 'isConnected'> }>
+type AppDependencies = Readonly<{
+    config: ApiConfig
+    logger: Logger
+    database?: Pick<MongoDbIntegration, 'isConnected'>
+    rateLimitStoreFactory?: RateLimitStoreFactory
+}>
 
-export const createApp = ({ config, logger, database }: AppDependencies): Express => {
+export const createApp = ({ config, logger, database, rateLimitStoreFactory }: AppDependencies): Express => {
     const app = express()
     app.disable('x-powered-by')
+    app.set('trust proxy', config.trustProxyHops ?? 0)
     app.use(createRequestTelemetry(logger))
+    app.use(createApiRateLimit({ ...config.rateLimit, ...(rateLimitStoreFactory ? { store: rateLimitStoreFactory('api-global') } : {}) }))
     const webOrigins =
         config.environment === 'development'
             ? [...new Set([config.webOrigin, 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://127.0.0.1:3001'])]
@@ -34,6 +42,7 @@ export const createApp = ({ config, logger, database }: AppDependencies): Expres
             webOrigins,
             secureCookies: config.environment === 'production',
             isPersistenceAvailable: database?.isConnected ?? (() => false),
+            ...(rateLimitStoreFactory ? { rateLimitStoreFactory } : {}),
             ...(emailSender ? { emailSender } : {})
         }),
         createWorkItemRoutes(webOrigins, database?.isConnected ?? (() => false), workItemEvents)

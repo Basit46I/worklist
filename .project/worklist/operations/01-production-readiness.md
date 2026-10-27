@@ -23,6 +23,7 @@ Prepare Worklist for a controlled production release and document the actions th
 - Restrict MongoDB Atlas network access to the API host's stable egress addresses where possible. Use a least-privilege database user and do not expose the database URI to the browser.
 - Confirm `/health` returns liveness and `/ready` returns HTTP 200 only when MongoDB is available. Alert if readiness fails or the API exits.
 - Keep the previous release available until the smoke checks below pass; document the rollback command in the host-specific deployment notes.
+- Before running more than one API instance, configure `REDIS_URL` for shared rate-limit storage, set `API_TRUST_PROXY_HOPS` to the exact trusted proxy count, and configure cross-instance event delivery; real-time events remain process-local. The local load stress profile does not verify multi-instance coordination.
 
 ### 2.1 Email delivery setup (owner action)
 
@@ -43,7 +44,7 @@ If SMTP is not configured, the local app can still run, but email verification, 
 4. Add API secrets: `NODE_ENV=production`, `API_HOST`, `API_PORT`, `WEB_ORIGIN`, `MONGODB_URI`, and all SMTP values. Configure `NEXT_PUBLIC_API_BASE_URL` on the web build to the public API URL.
 5. Use the provider's required network bind address and assigned port. The local `127.0.0.1` setting may only accept local traffic; do not expose MongoDB or SMTP secrets to the browser.
 6. Enable HTTPS and set `WEB_ORIGIN` to the exact web origin (scheme + host, no path). Check cross-origin cookie behavior and both `/health` and `/ready` after deployment.
-7. Configure deployment logs, readiness/exit alerts, log access controls, retention, and a rollback to the previous release. Keep the first release at one API instance because event delivery and throttling are process-local.
+7. Configure deployment logs, readiness/exit alerts, log access controls, retention, and a rollback to the previous release. Keep the first release at one API instance until shared rate-limit storage and cross-instance event delivery are configured.
 
 Provider names and account creation are intentionally left to the owner; this runbook does not claim any host has been selected or configured.
 
@@ -62,9 +63,10 @@ Run these checks against a staging deployment first, then repeat critical paths 
 | 7   | Change a member role, then remove a non-owner                | New role applies; removed member's next protected request is denied         | [ ]               |
 | 8   | Request password reset and use the one-time link             | New password works, old password fails, previous sessions are revoked       | [ ]               |
 | 9   | Check `/health` and `/ready` with database connected         | Health reports liveness; readiness reports database available               | [ ]               |
-| 10  | Review browser bundle, repository changes, and API telemetry | No credentials/tokens leak; request telemetry excludes query/body/identity  | [ ]               |
-| 11  | Confirm current and previous release deployment/rollback     | Rollback is documented and prior version can connect to current schema      | [ ]               |
-| 12  | Restore an Atlas backup to an isolated target                | Sample records/counts match; restore time and data-loss window are recorded | [ ]               |
+| 10  | Run an approved staging load profile against representative data | p50/p95/p99, errors, database load, and thresholds are recorded         | [ ]               |
+| 11  | Review browser bundle, repository changes, and API telemetry | No credentials/tokens leak; request telemetry excludes query/body/identity  | [ ]               |
+| 12  | Confirm current and previous release deployment/rollback     | Rollback is documented and prior version can connect to current schema      | [ ]               |
+| 13  | Restore an Atlas backup to an isolated target                | Sample records/counts match; restore time and data-loss window are recorded | [ ]               |
 
 | Run metadata                      | Value |
 | --------------------------------- | ----- |

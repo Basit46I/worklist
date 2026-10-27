@@ -3,6 +3,7 @@ import type { Server } from 'node:http'
 import type { Express } from 'express'
 import type { Logger } from '@workspace/logging'
 import type { ApiConfig } from '../types/index.js'
+import { apiRuntime } from '../constants/index.js'
 
 type ServerDependencies = Readonly<{ app: Express; config: ApiConfig; logger: Logger }>
 
@@ -14,6 +15,8 @@ export type ApiServer = Readonly<{
 
 export const createServer = ({ app, config, logger }: ServerDependencies): ApiServer => {
     const server = createNodeServer(app)
+    server.requestTimeout = apiRuntime.requestTimeoutMs
+    server.headersTimeout = apiRuntime.headersTimeoutMs
     return {
         raw: server,
         start: () =>

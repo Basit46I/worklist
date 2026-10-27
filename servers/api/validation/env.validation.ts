@@ -6,8 +6,18 @@ export const apiEnvironmentSchema = z
         NODE_ENV: z.enum(['development', 'test', 'production']),
         API_HOST: z.string().min(1),
         API_PORT: z.coerce.number().int().min(1).max(65_535),
+        API_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(1_000_000).optional(),
+        API_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1_000).max(86_400_000).optional(),
+        API_TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).optional(),
         WEB_ORIGIN: z.url(),
         MONGODB_URI: z.string().min(1).optional(),
+        REDIS_URL: z.string().refine((value) => {
+            try {
+                return ['redis:', 'rediss:'].includes(new URL(value).protocol)
+            } catch {
+                return false
+            }
+        }, 'REDIS_URL must use redis:// or rediss://.').optional(),
         SMTP_HOST: z.string().min(1).optional(),
         SMTP_PORT: z.coerce.number().int().min(1).max(65_535).optional(),
         SMTP_USER: z.string().min(1).optional(),
