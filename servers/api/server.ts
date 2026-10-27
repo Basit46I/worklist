@@ -1,22 +1,7 @@
 import 'dotenv/config'
-import { createLogger } from '@workspace/logging'
-import { createApp, createServer, createShutdown } from './bootstrap/index.js'
-import { createApiConfig, readApiEnvironment } from './config/index.js'
-import { apiRuntime } from './constants/index.js'
-import { createMongoDbIntegration, createRedisRateLimitStore } from './integrations/index.js'
+import { createApiRuntime, createServer, createShutdown } from './bootstrap/index.js'
 
-const config = createApiConfig(readApiEnvironment())
-const logger = createLogger({
-    service: apiRuntime.serviceName,
-    level: config.logLevel,
-    format: config.environment === 'production' ? 'json' : 'pretty'
-})
-const database = createMongoDbIntegration({
-    logger,
-    ...(config.mongodbUri ? { uri: config.mongodbUri } : {})
-})
-const rateLimitStore = config.redisUrl ? createRedisRateLimitStore({ url: config.redisUrl, namespace: config.environment, logger }) : undefined
-const app = createApp({ config, logger, database, ...(rateLimitStore ? { rateLimitStoreFactory: rateLimitStore.createStore } : {}) })
+const { config, logger, database, rateLimitStore, app } = createApiRuntime()
 const server = createServer({ app, config, logger })
 
 const shutdown = createShutdown({ database, logger, server, ...(rateLimitStore ? { rateLimitStore } : {}) })

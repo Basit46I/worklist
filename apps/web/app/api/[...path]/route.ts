@@ -6,7 +6,7 @@ const forwardApiRequest = async (request: Request, { params }: ApiRouteContext):
     const target = new URL(`${path.map(encodeURIComponent).join('/')}${new URL(request.url).search}`, `${apiOrigin}/`)
     const headers = new Headers(request.headers)
     for (const name of ['connection', 'content-length', 'host', 'origin', 'transfer-encoding']) headers.delete(name)
-    headers.set('origin', 'http://localhost:3000')
+    headers.set('origin', request.headers.get('origin') ?? 'http://localhost:3000')
 
     const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer()
     const upstream = await fetch(target, {
