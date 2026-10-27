@@ -10,7 +10,7 @@
         "test": "tsx --test features/auth/tests/*.test.ts features/health/tests/*.test.ts features/worklist/tests/*.test.ts tests/environment.test.ts tests/http-boundaries.test.ts tests/load-check.test.mjs tests/mongodb.test.ts tests/rate-limit-redis.test.ts tests/shutdown.test.ts",
         "load:smoke": "node scripts/load-check.mjs",
         "load:stress": "node scripts/load-check.mjs --mode stress",
-        "lint": "eslint \"**/*.ts\"",
+        "lint": "eslint \"**/*.{ts,mts}\"",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {

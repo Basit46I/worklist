@@ -16,7 +16,7 @@
     "api": {
       "root": "servers/api",
       "framework": "express",
-      "entrypoint": "index.ts"
+      "entrypoint": "index.mts"
     }
   },
   "rewrites": [
