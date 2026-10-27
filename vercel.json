@@ -4,6 +4,7 @@
     "web": {
       "root": "apps/web",
       "framework": "nextjs",
+      "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run web:build",
       "bindings": [
         {
           "type": "service",
@@ -16,6 +17,7 @@
     "api": {
       "root": "servers/api",
       "framework": "express",
+      "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build",
       "entrypoint": "index.mts"
     }
   },
