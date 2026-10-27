@@ -1,23 +1,26 @@
 packages:
-    - 'apps/*'
-    - 'servers/*'
-    - 'packages/*'
-    - 'prebuilt/*'
-    - 'prebuilt/*/*'
+  - 'apps/*'
+  - 'servers/*'
+  - 'packages/*'
+  - 'prebuilt/*'
+  - 'prebuilt/*/*'
 
 allowBuilds:
-    esbuild: true
-    unrs-resolver: true
+  esbuild: true
+  unrs-resolver: true
 
 audit:
-    level: high
+  level: high
 
 minimumReleaseAgeExclude:
-    - next@16.3.6 || 16.3.8
-    - source-map-js@1.2.2
-    - sharp@0.35.5
-    - '@modelcontextprotocol/sdk@1.31.0'
+  - next@16.3.6 || 16.3.8
+  - source-map-js@1.2.2
+  - sharp@0.35.5
+  - '@modelcontextprotocol/sdk@1.31.0'
+  - zod@4.6.6
+  - body-parser@2.4.0
+  - undici@7.30.1
 
 auditConfig:
-    ignoreGhsas:
-        - GHSA-vfj7-8cjw-p6xm
+  ignoreGhsas:
+    - GHSA-vfj7-8cjw-p6xm

@@ -144,7 +144,7 @@ test('requires the pinned official shadcn registry workflow', async (context) =>
         path.join(projectRoot, 'package.json'),
         JSON.stringify({
             scripts: { 'ui:add': 'custom-generator add' },
-            devDependencies: { shadcn: '^4.20.0' }
+            devDependencies: { shadcn: '^4.22.1' }
         }),
         'utf8'
     )
@@ -156,7 +156,7 @@ test('requires the pinned official shadcn registry workflow', async (context) =>
                 packageProject: 'ui',
                 registryConfig: 'components.json',
                 registryCliPackage: 'shadcn',
-                registryCliVersion: '4.20.0',
+                registryCliVersion: '4.22.1',
                 registryAddScript: 'ui:add',
                 registryAddAllScript: 'ui:add:all'
             }
