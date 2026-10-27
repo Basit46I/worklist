@@ -18,6 +18,11 @@
       "root": "servers/api",
       "framework": "express",
       "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build",
+      "functions": {
+        "index.mts": {
+          "includeFiles": "package.json"
+        }
+      },
       "entrypoint": "index.mts"
     }
   },

@@ -1,14 +1,4 @@
-import type { createApiRuntime as createApiRuntimeFactory } from './bootstrap/create-runtime.js'
-
-type ApiRuntimeModule = {
-    createApiRuntime?: typeof createApiRuntimeFactory
-    default?: { createApiRuntime?: typeof createApiRuntimeFactory }
-}
-
-const runtimeModule = (await import('./bootstrap/index.js')) as unknown as ApiRuntimeModule
-const createApiRuntime = runtimeModule.createApiRuntime ?? runtimeModule.default?.createApiRuntime
-
-if (createApiRuntime === undefined) throw new Error('API runtime factory is unavailable.')
+import { createApiRuntime } from './bootstrap/index.js'
 
 const environment = Object.freeze({
     ...process.env,
