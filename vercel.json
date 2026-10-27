@@ -18,7 +18,7 @@
       "root": "servers/api",
       "framework": "express",
       "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build",
-      "entrypoint": "dist/index.mjs"
+      "entrypoint": "index.mts"
     }
   },
   "rewrites": [
