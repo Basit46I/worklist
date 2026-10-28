@@ -20,11 +20,11 @@
       "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
       "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build && node servers/api/scripts/clean-vercel-deploy.mjs && pnpm --filter @workspace/api deploy --prod --legacy servers/api/vercel-deploy",
       "functions": {
-        "vercel-deploy/dist/vercel-function.mjs": {
+        "vercel-entry.mjs": {
           "includeFiles": "vercel-deploy/**"
         }
       },
-      "entrypoint": "vercel-deploy/dist/vercel-function.mjs"
+      "entrypoint": "vercel-entry.mjs"
     }
   },
   "rewrites": [
