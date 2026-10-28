@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { pathExists, toPosixPath } from '../utilities/fs.mjs'
-import { fileRole, featureIdentity, getImports, includesSegment, issue, resolveWorkspaceImport, segmentsOf, startsWithPath, uiLayer } from './architecture-boundaries.shared.mjs'
+import { fileRole, featureIdentity, getImports, includesSegment, issue, localIssue, resolveWorkspaceImport, segmentsOf, startsWithPath, uiLayer } from './architecture-boundaries.shared.mjs'
 import { prepareArchitectureBoundaryScan } from './architecture-boundaries.structure.mjs'
 
 export const validateArchitectureBoundaries = async (workspace) => {

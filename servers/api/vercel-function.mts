@@ -1,4 +1,6 @@
-type ApiRuntimeFactory = (typeof import('./bootstrap/index.js'))['createApiRuntime']
+import type { createApiRuntime as createApiRuntimeType } from './bootstrap/index.js'
+
+type ApiRuntimeFactory = typeof createApiRuntimeType
 type ApiBootstrapModule = Readonly<{
     createApiRuntime?: ApiRuntimeFactory
     default?: Readonly<{ createApiRuntime?: ApiRuntimeFactory }>
