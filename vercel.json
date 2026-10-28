@@ -21,7 +21,7 @@
       "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build && node servers/api/scripts/clean-vercel-deploy.mjs && pnpm --filter @workspace/api deploy --prod --legacy servers/api/vercel-deploy",
       "functions": {
         "vercel-entry.mjs": {
-          "includeFiles": ["vercel-deploy/**", "package.json"]
+          "includeFiles": "{vercel-deploy/**,package.json}"
         }
       },
       "entrypoint": "vercel-entry.mjs"
