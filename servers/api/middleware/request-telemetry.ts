@@ -13,7 +13,8 @@ export const createRequestTelemetry =
                 method: request.method,
                 route,
                 statusCode: response.statusCode,
-                durationMs: Math.max(0, Math.round(performance.now() - startedAt))
+                durationMs: Math.max(0, Math.round(performance.now() - startedAt)),
+                vercelRequestId: request.get('x-vercel-id')
             })
         })
         next()

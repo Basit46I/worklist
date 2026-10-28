@@ -18,7 +18,7 @@ export const createNotFoundHandler = (): RequestHandler => (request, _response, 
 
 export const createErrorHandler =
     ({ logger }: { logger: Logger }): ErrorRequestHandler =>
-    (error: unknown, _request, response, _next) => {
+    (error: unknown, request, response, _next) => {
         if (error instanceof ZodError) {
             const body: ApiErrorResponse = {
                 error: { code: ERROR_CODES.validation, message: ERROR_MESSAGES.validation, details: error.issues }
@@ -37,7 +37,14 @@ export const createErrorHandler =
             response.status(error.status).json(body)
             return
         }
-        logger.error('Unhandled API error.', { error: error instanceof Error ? error.message : String(error) })
+        logger.error('Unhandled API error.', {
+            method: request.method,
+            path: request.originalUrl,
+            vercelRequestId: request.get('x-vercel-id'),
+            errorName: error instanceof Error ? error.name : 'UnknownError',
+            errorMessage: error instanceof Error ? error.message : String(error),
+            ...(error instanceof Error && error.stack ? { errorStack: error.stack } : {})
+        })
         const body: ApiErrorResponse = {
             error: { code: ERROR_CODES.internal, message: ERROR_MESSAGES.internal }
         }

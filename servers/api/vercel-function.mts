@@ -20,8 +20,19 @@ const environment = Object.freeze({
 })
 const { app, database, rateLimitStore, logger } = createApiRuntime(environment)
 
-await database.connect()
-if (rateLimitStore) await rateLimitStore.connect()
+try {
+    await database.connect()
+    if (rateLimitStore) await rateLimitStore.connect()
+} catch (error) {
+    logger.error('API function initialization failed.', {
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        ...(error instanceof Error && error.stack ? { errorStack: error.stack } : {}),
+        vercelRegion: process.env.VERCEL_REGION,
+        vercelRequestId: process.env.VERCEL_REQUEST_ID
+    })
+    throw error
+}
 
 logger.info('API function initialized.')
 
