@@ -1,1 +1,1 @@
-export { default } from './vercel-deploy/dist/index.mjs'
+export { default } from './vercel-deploy/dist/vercel-function.mjs'
