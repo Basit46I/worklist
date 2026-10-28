@@ -19,11 +19,6 @@
       "framework": "express",
       "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
       "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build && node servers/api/scripts/clean-vercel-deploy.mjs && pnpm --filter @workspace/api deploy --prod --legacy servers/api/vercel-deploy",
-      "functions": {
-        "vercel-entry.mjs": {
-          "includeFiles": "vercel-deploy/**"
-        }
-      },
       "entrypoint": "vercel-entry.mjs"
     }
   },
