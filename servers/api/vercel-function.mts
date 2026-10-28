@@ -6,7 +6,20 @@ type ApiBootstrapModule = Readonly<{
     default?: Readonly<{ createApiRuntime?: ApiRuntimeFactory }>
 }>
 
-const apiBootstrap = (await import('./bootstrap/index.js')) as unknown as ApiBootstrapModule
+let apiBootstrap: ApiBootstrapModule
+try {
+    apiBootstrap = await import('./bootstrap/index.js')
+} catch (error) {
+    console.error('API bootstrap module failed to load.', {
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        ...(error instanceof Error && error.stack ? { errorStack: error.stack } : {}),
+        moduleUrl: import.meta.url,
+        nodeVersion: process.version,
+        vercelRegion: process.env.VERCEL_REGION
+    })
+    throw error
+}
 const createApiRuntime = apiBootstrap.createApiRuntime ?? apiBootstrap.default?.createApiRuntime
 
 if (!createApiRuntime) throw new Error('The API bootstrap module does not expose createApiRuntime.')
