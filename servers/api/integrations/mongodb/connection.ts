@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from './mongoose-client.js'
 import type { Logger } from '@workspace/logging'
 import type { MongoClient, MongoDbIntegration } from './types.js'
 

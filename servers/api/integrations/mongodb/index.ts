@@ -1,5 +1,4 @@
 export { createMongoDbIntegration } from './connection.js'
 export type { MongoClient, MongoDbIntegration } from './types.js'
-export { default as mongoose } from 'mongoose'
-export { Types } from 'mongoose'
+export { mongoose, Types } from './mongoose-client.js'
 export type { Model } from 'mongoose'
