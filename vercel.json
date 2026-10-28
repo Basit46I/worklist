@@ -18,13 +18,13 @@
       "root": "servers/api",
       "framework": "express",
       "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-      "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build",
+      "buildCommand": "cd ../.. && node codebase/cli/repo.mjs run api:build && pnpm --filter @workspace/api deploy --prod --legacy servers/api/vercel-deploy",
       "functions": {
-        "index.mts": {
-          "includeFiles": "package.json"
+        "vercel-entry.mjs": {
+          "includeFiles": "vercel-deploy/**"
         }
       },
-      "entrypoint": "index.mts"
+      "entrypoint": "vercel-entry.mjs"
     }
   },
   "rewrites": [
