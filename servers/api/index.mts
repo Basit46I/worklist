@@ -1,4 +1,13 @@
-import { createApiRuntime } from './bootstrap/index.js'
+type ApiRuntimeFactory = (typeof import('./bootstrap/index.js'))['createApiRuntime']
+type ApiBootstrapModule = Readonly<{
+    createApiRuntime?: ApiRuntimeFactory
+    default?: Readonly<{ createApiRuntime?: ApiRuntimeFactory }>
+}>
+
+const apiBootstrap = (await import('./bootstrap/index.js')) as unknown as ApiBootstrapModule
+const createApiRuntime = apiBootstrap.createApiRuntime ?? apiBootstrap.default?.createApiRuntime
+
+if (!createApiRuntime) throw new Error('The API bootstrap module does not expose createApiRuntime.')
 
 const environment = Object.freeze({
     ...process.env,
