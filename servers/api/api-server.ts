@@ -1,10 +1,10 @@
 import 'dotenv/config'
 import { createApiRuntime, createServer, createShutdown } from './bootstrap/index.js'
 
-const { config, logger, database, rateLimitStore, app } = createApiRuntime()
+const { config, logger, database, rateLimitStore, telemetry, app } = createApiRuntime()
 const server = createServer({ app, config, logger })
 
-const shutdown = createShutdown({ database, logger, server, ...(rateLimitStore ? { rateLimitStore } : {}) })
+const shutdown = createShutdown({ database, logger, server, telemetry, ...(rateLimitStore ? { rateLimitStore } : {}) })
 
 await database.connect()
 if (rateLimitStore) await rateLimitStore.connect()

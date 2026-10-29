@@ -16,6 +16,7 @@ export const createWorklistListLifecycleActions = (options: UseWorklistListActio
                 options.newListFolder.trim()
             )
             options.setLists((current) => [...current.filter((list) => list.id !== created.id), created])
+            if (created.spaceId) options.setSpaces((current) => current.some((space) => space.id === created.spaceId) ? current : [...current, { id: created.spaceId as string, name: created.spaceName, description: '', archivedAt: null }])
             options.setListNameDraft('')
             options.setNewListDescription('')
             options.setNewListSpace('General')

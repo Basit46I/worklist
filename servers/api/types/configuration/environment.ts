@@ -18,5 +18,10 @@ export type ValidatedApiEnvironment = Readonly<{
     SMTP_USER?: string | undefined
     SMTP_PASSWORD?: string | undefined
     EMAIL_FROM?: string | undefined
+    CRON_SECRET?: string | undefined
+    METRICS_BEARER_TOKEN?: string | undefined
+    ALERT_WEBHOOK_URL?: string | undefined
+    OTEL_EXPORTER_OTLP_ENDPOINT?: string | undefined
+    OTEL_EXPORTER_OTLP_HEADERS?: string | undefined
     LOG_LEVEL: LogLevel
 }>

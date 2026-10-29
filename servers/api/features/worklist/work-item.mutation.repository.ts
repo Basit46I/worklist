@@ -17,11 +17,11 @@ export const createWorkItemMutationRepository = () => Object.freeze({
             })
             return serialize(record)
         },
-        update: async (teamId: string, itemId: string, changes: UpdateWorkItemInput) => {
+        update: async (teamId: string, itemId: string, changes: UpdateWorkItemInput, expectedUpdatedAt?: Date) => {
             if (!mongoose.Types.ObjectId.isValid(itemId)) return null
             const { dependsOn, ...fields } = changes
             const update = { ...fields, ...(dependsOn !== undefined ? { dependsOn: dependsOn.map((id) => new mongoose.Types.ObjectId(id)) } : {}) }
-            const record = await WorkItemModel.findOneAndUpdate({ _id: itemId, teamId }, { $set: update }, { returnDocument: 'after', runValidators: true })
+            const record = await WorkItemModel.findOneAndUpdate({ _id: itemId, teamId, ...(expectedUpdatedAt ? { updatedAt: expectedUpdatedAt } : {}) }, { $set: update }, { returnDocument: 'after', runValidators: true })
                 .lean()
                 .exec()
             return record ? serialize(record) : null

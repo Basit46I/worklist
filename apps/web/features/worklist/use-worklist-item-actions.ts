@@ -118,7 +118,7 @@ export const useWorklistItemActions = ({
         setItems((current) => current.map((item) => (item.id === itemId ? { ...item, ...changes } : item)))
         setPageError('')
         setPageNotice('')
-        void updateWorkItem(itemId, changes)
+        void updateWorkItem(itemId, changes, previous.updatedAt)
             .then((updated) => {
                 if (itemUpdateRevisions.current.get(itemId) !== revision) return
                 setItems((current) =>

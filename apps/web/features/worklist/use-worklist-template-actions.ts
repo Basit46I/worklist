@@ -8,6 +8,7 @@ import {
     deleteWorklistTemplate,
     updateWorklistTemplate,
     type WorklistList,
+    type WorklistSpace,
     type WorklistTemplate
 } from './api'
 import type { WorkItem } from './model'
@@ -38,6 +39,7 @@ type UseWorklistTemplateActionsOptions = Readonly<{
     newListFolder: string
     setNewListFolder: Dispatch<SetStateAction<string>>
     setLists: Dispatch<SetStateAction<readonly WorklistList[]>>
+    setSpaces: Dispatch<SetStateAction<readonly WorklistSpace[]>>
     setItems: Dispatch<SetStateAction<readonly WorkItem[]>>
     setShowTemplatePicker: Dispatch<SetStateAction<boolean>>
     setShowTemplateBuilder: Dispatch<SetStateAction<boolean>>
@@ -63,6 +65,10 @@ export const useWorklistTemplateActions = (options: UseWorklistTemplateActionsOp
                 template.statuses
             )
             options.setLists((current) => [...current.filter((list) => list.id !== created?.id), created as WorklistList])
+            if (created.spaceId) {
+                const createdSpace = { id: created.spaceId, name: created.spaceName, description: '', archivedAt: null }
+                options.setSpaces((current) => current.some((space) => space.id === createdSpace.id) ? current : [...current, createdSpace])
+            }
             const createdItems: WorkItem[] = []
             for (const task of template.tasks)
                 createdItems.push(

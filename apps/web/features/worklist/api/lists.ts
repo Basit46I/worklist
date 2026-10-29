@@ -36,3 +36,12 @@ export const archiveWorklistList = async (listId: string): Promise<WorklistList>
 export const restoreWorklistList = async (listId: string): Promise<WorklistList> =>
     (await request<{ list: WorklistList }>(`/lists/${encodeURIComponent(listId)}/restore`, { method: 'POST' })).list
 export const deleteWorklistList = (listId: string): Promise<void> => request<void>(`/lists/${encodeURIComponent(listId)}`, { method: 'DELETE' })
+export const createClientRequestForm = async (listId: string): Promise<string> =>
+    (await request<{ token: string }>(`/lists/${encodeURIComponent(listId)}/request-form`, { method: 'POST' })).token
+export const revokeClientRequestForm = (listId: string): Promise<void> =>
+    request<void>(`/lists/${encodeURIComponent(listId)}/request-form`, { method: 'DELETE' })
+export type PublicClientRequest = Readonly<{ contactName: string; contactEmail: string; title: string; details: string; dueDate: string; website?: string }>
+export const fetchClientRequestForm = (token: string): Promise<{ form: Readonly<{ listName: string; listDescription: string }> }> =>
+    request(`/client-request-forms/${encodeURIComponent(token)}`)
+export const submitClientRequest = (token: string, input: PublicClientRequest): Promise<{ submitted: true }> =>
+    request(`/client-request-forms/${encodeURIComponent(token)}`, { method: 'POST', body: JSON.stringify(input) })

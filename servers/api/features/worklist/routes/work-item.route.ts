@@ -1,15 +1,29 @@
 import { Router } from 'express'
 import { createWorkItemController } from '../controllers/work-item.controller.js'
 import type { WorkItemEventHub } from '../work-item.events.js'
+import { rateLimit, type Store } from 'express-rate-limit'
+import type { EmailSender } from '../../../integrations/index.js'
 
-export const createWorkItemRoutes = (webOrigins: readonly string[], isPersistenceAvailable: () => boolean, events: WorkItemEventHub): Router => {
+export const createWorkItemRoutes = (webOrigins: readonly string[], isPersistenceAvailable: () => boolean, events: WorkItemEventHub, rateLimitStoreFactory?: (scope: string) => Store, options: Readonly<{ emailSender?: EmailSender; webOrigin: string; cronSecret?: string }> = { webOrigin: webOrigins[0] ?? 'http://localhost:3000' }): Router => {
     const router = Router()
-    const controller = createWorkItemController(webOrigins, isPersistenceAvailable, events)
+    const controller = createWorkItemController(webOrigins, isPersistenceAvailable, events, options)
     router.get('/templates', controller.guard, controller.handleGetTemplates)
     router.post('/templates', controller.guard, controller.verifyOrigin, controller.handlePostTemplates)
     router.patch('/templates/:templateId', controller.guard, controller.verifyOrigin, controller.handlePatchTemplatesTemplateId)
     router.delete('/templates/:templateId', controller.guard, controller.verifyOrigin, controller.handleDeleteTemplatesTemplateId)
     router.get('/lists', controller.guard, controller.handleGetLists)
+    router.post('/lists/:listId/request-form', controller.guard, controller.verifyOrigin, controller.handlePostListRequestForm)
+    router.delete('/lists/:listId/request-form', controller.guard, controller.verifyOrigin, controller.handleDeleteListRequestForm)
+    router.get('/client-request-forms/:token', controller.handleGetClientRequestForm)
+    router.post('/client-request-forms/:token', rateLimit({ windowMs: 15 * 60_000, limit: 20, standardHeaders: true, legacyHeaders: false, ...(rateLimitStoreFactory ? { store: rateLimitStoreFactory('public-client-request') } : {}) }), controller.verifyOrigin, controller.handlePostClientRequestForm)
+    router.post('/work-items/:itemId/request-approval', controller.guard, controller.verifyOrigin, controller.handlePostRequestApproval)
+    router.get('/client-approvals/:token', controller.handleGetClientApproval)
+    router.post('/client-approvals/:token', rateLimit({ windowMs: 15 * 60_000, limit: 20, standardHeaders: true, legacyHeaders: false, ...(rateLimitStoreFactory ? { store: rateLimitStoreFactory('public-client-approval') } : {}) }), controller.verifyOrigin, controller.handlePostClientApproval)
+    router.get('/scheduled/reminders', controller.handleGetScheduledReminders)
+    router.get('/spaces', controller.guard, controller.handleGetSpaces)
+    router.post('/spaces', controller.guard, controller.verifyOrigin, controller.handlePostSpaces)
+    router.get('/spaces/:spaceId/folders', controller.guard, controller.handleGetSpaceFolders)
+    router.post('/spaces/:spaceId/folders', controller.guard, controller.verifyOrigin, controller.handlePostSpaceFolders)
     router.post('/lists', controller.guard, controller.verifyOrigin, controller.handlePostLists)
     router.post('/lists/:listId/duplicate', controller.guard, controller.verifyOrigin, controller.handlePostListsListIdDuplicate)
     router.patch('/lists/:listId', controller.guard, controller.verifyOrigin, controller.handlePatchListsListId)

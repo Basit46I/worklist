@@ -8,6 +8,7 @@ import type {
     WorkItemColumn,
     WorkItemColumnWidths,
     WorkItemActivityClient,
+    WorkItemApprovalClient,
     WorklistCommentClient,
     WorklistListOption
 } from '../model/index.js'
@@ -31,6 +32,7 @@ export const WorkItemRow = ({
     commentRefreshItemId,
     commentClient,
     activityClient,
+    approvalClient,
     onToggleExpanded,
     onToggleSelect,
     onDelete,
@@ -55,6 +57,7 @@ export const WorkItemRow = ({
     commentRefreshItemId: string | null
     commentClient: WorklistCommentClient
     activityClient: WorkItemActivityClient
+    approvalClient: WorkItemApprovalClient
     onToggleExpanded: (itemId: string) => void
     onToggleSelect: (itemId: string, checked: boolean) => void
     onDelete: (itemId: string) => void
@@ -170,7 +173,7 @@ export const WorkItemRow = ({
                         )}
                     </div>
                 )}
-                <WorkItemExpandedDetails activityClient={activityClient} availableItems={availableItems} canEdit={canEdit} commentClient={commentClient} commentRefreshItemId={commentRefreshItemId} commentRefreshSequence={commentRefreshSequence} expanded={expanded} item={item} lists={lists} onCreateSubtask={onCreateSubtask} onUpdate={onUpdate} />
+                <WorkItemExpandedDetails activityClient={activityClient} approvalClient={approvalClient} availableItems={availableItems} canEdit={canEdit} commentClient={commentClient} commentRefreshItemId={commentRefreshItemId} commentRefreshSequence={commentRefreshSequence} expanded={expanded} item={item} lists={lists} onCreateSubtask={onCreateSubtask} onUpdate={onUpdate} />
             </TableCell>
             <WorkItemFieldCells canEdit={canEdit} columnWidths={columnWidths} columns={columns} item={item} onUpdate={onUpdate} statuses={statuses} />
             <TableCell className="w-28 pr-3">

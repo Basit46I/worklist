@@ -23,6 +23,11 @@ export const apiEnvironmentSchema = z
         SMTP_USER: z.string().min(1).optional(),
         SMTP_PASSWORD: z.string().min(1).optional(),
         EMAIL_FROM: z.string().min(3).optional(),
+        CRON_SECRET: z.string().min(32).optional(),
+        METRICS_BEARER_TOKEN: z.string().min(32).optional(),
+        ALERT_WEBHOOK_URL: z.url({ protocol: /^https$/ }).optional(),
+        OTEL_EXPORTER_OTLP_ENDPOINT: z.url({ protocol: /^https?$/ }).optional(),
+        OTEL_EXPORTER_OTLP_HEADERS: z.string().min(1).optional(),
         LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
     })
     .superRefine((value, context) => {

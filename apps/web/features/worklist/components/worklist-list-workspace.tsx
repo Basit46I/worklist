@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, type FormEvent, type ReactElement } from 'react'
-import { Archive, ChevronDown, Copy, FileText, Folder, Pencil, Settings2, Trash2, Workflow } from 'lucide-react'
+import { Archive, ChevronDown, Copy, FileText, Folder, Link2, Pencil, Settings2, Trash2, Workflow } from 'lucide-react'
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, Input } from '@workspace/ui/primitives'
-import { fetchWorklistLists, updateWorklistList, type WorklistList } from '../api'
+import { createClientRequestForm, fetchWorklistLists, revokeClientRequestForm, updateWorklistList, type WorklistList } from '../api'
 import { useWorklistPageState } from '../use-worklist-page-state'
 import { useWorklistListActions } from '../use-worklist-list-actions'
 import { useWorklistTemplateActions } from '../use-worklist-template-actions'
@@ -23,8 +23,44 @@ export const WorklistListWorkspace = ({ state, listActions, templateActions, act
     const { lists, setLists, includeArchivedLists, setIncludeArchivedLists, setPageError, setPageNotice } = state
     const [locationOpen, setLocationOpen] = useState(false)
     const [budgetOpen, setBudgetOpen] = useState(false)
+    const [requestFormOpen, setRequestFormOpen] = useState(false)
+    const [requestFormToken, setRequestFormToken] = useState('')
+    const [requestFormBusy, setRequestFormBusy] = useState(false)
     const editable = canEditWorkspace(user.role)
     const archivedLists = lists.filter((list) => Boolean(list.archivedAt))
+    const requestFormUrl = requestFormToken ? `${typeof window === 'undefined' ? '' : window.location.origin}/client-request/${requestFormToken}` : ''
+
+    const generateRequestForm = async (): Promise<void> => {
+        if (!activeList) return
+        setRequestFormBusy(true)
+        try {
+            const token = await createClientRequestForm(activeList.id)
+            setRequestFormToken(token)
+            setLists((current) => current.map((list) => list.id === activeList.id ? { ...list, requestFormEnabled: true } : list))
+            setPageNotice('Public request form link created. Copy it now; it is only shown once.')
+            setPageError('')
+        } catch (error) {
+            setPageError(error instanceof Error ? error.message : 'Could not create the request form link.')
+        } finally {
+            setRequestFormBusy(false)
+        }
+    }
+
+    const disableRequestForm = async (): Promise<void> => {
+        if (!activeList) return
+        setRequestFormBusy(true)
+        try {
+            await revokeClientRequestForm(activeList.id)
+            setRequestFormToken('')
+            setLists((current) => current.map((list) => list.id === activeList.id ? { ...list, requestFormEnabled: false } : list))
+            setPageNotice('Public request form disabled. Its old link no longer works.')
+            setPageError('')
+        } catch (error) {
+            setPageError(error instanceof Error ? error.message : 'Could not disable the request form.')
+        } finally {
+            setRequestFormBusy(false)
+        }
+    }
 
     const saveLocation = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault()
@@ -49,10 +85,11 @@ export const WorklistListWorkspace = ({ state, listActions, templateActions, act
                 <DropdownMenuTrigger asChild><button aria-label={`List options for ${activeList?.name ?? 'current list'}`} className="grid size-7 place-items-center rounded-full text-[#74847a] transition hover:bg-[#eaf0e9] hover:text-[#244a37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#688b70]" type="button"><ChevronDown aria-hidden="true" className="size-4" /></button></DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-60 rounded-xl border-[#dce4da] p-1.5">
                     <DropdownMenuLabel className="px-2 py-1.5 text-[10px] uppercase tracking-[.13em] text-[#879188]">List options</DropdownMenuLabel>
-                    <DropdownMenuItem onSelect={() => setLocationOpen(true)}><Folder aria-hidden="true" />Move to space or folder</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => { state.setNewListSpace(activeList?.spaceName ?? 'General'); setLocationOpen(true) }}><Folder aria-hidden="true" />Move to space or folder</DropdownMenuItem>
                     <DropdownMenuItem onSelect={listActions.editListStatuses}><Workflow aria-hidden="true" />Manage statuses</DropdownMenuItem>
                     <DropdownMenuItem onSelect={listActions.editListDescription}><FileText aria-hidden="true" />{activeList?.description ? 'Edit description' : 'Add description'}</DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setBudgetOpen(true)}><Settings2 aria-hidden="true" />Time budget</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => { setRequestFormToken(''); setRequestFormOpen(true) }}><Link2 aria-hidden="true" />Client request form</DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => { const next = !includeArchivedLists; setIncludeArchivedLists(next); void fetchWorklistLists(next).then(setLists).catch((error: unknown) => setPageError(error instanceof Error ? error.message : 'Could not load archived lists.')) }}><Archive aria-hidden="true" />{includeArchivedLists ? 'Hide archived lists' : 'Show archived lists'}</DropdownMenuItem>
                     {includeArchivedLists && archivedLists.map((list) => <DropdownMenuItem key={list.id} onSelect={() => listActions.restoreList(list.id)}><Archive aria-hidden="true" />Restore {list.name}</DropdownMenuItem>)}
                     {activeList && !activeList.isDefault && <><DropdownMenuSeparator /><DropdownMenuItem onSelect={listActions.renameList}><Pencil aria-hidden="true" />Rename list</DropdownMenuItem><DropdownMenuItem onSelect={listActions.duplicateList}><Copy aria-hidden="true" />Duplicate list</DropdownMenuItem><DropdownMenuItem className="text-[#526d58] focus:text-[#28543b]" onSelect={listActions.archiveList}><Archive aria-hidden="true" />Archive list</DropdownMenuItem><DropdownMenuItem className="text-rose-700 focus:text-rose-700" onSelect={listActions.deleteList}><Trash2 aria-hidden="true" />Delete empty list</DropdownMenuItem></>}
@@ -67,8 +104,8 @@ export const WorklistListWorkspace = ({ state, listActions, templateActions, act
                 <DialogContent className="max-w-lg rounded-2xl border-[#dce4da] p-6 sm:p-7">
                     <DialogHeader className="text-left"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#668356]">Workspace structure</p><DialogTitle className="font-serif text-2xl font-normal text-[#203d33]">Choose a home for this list</DialogTitle><DialogDescription>Spaces group related work. Folders are optional and help organize lists inside a space.</DialogDescription></DialogHeader>
                     <form className="mt-2 grid gap-4" onSubmit={saveLocation}>
-                        <label className="grid gap-1.5 text-xs font-medium text-[#59665c]">Space<Input autoComplete="off" defaultValue={activeList?.spaceName ?? 'General'} list="worklist-space-options" maxLength={80} name="spaceName" placeholder="e.g. Marketing" required /><datalist id="worklist-space-options">{[...new Set(lists.map((list) => list.spaceName))].map((space) => <option key={space} value={space} />)}</datalist></label>
-                        <label className="grid gap-1.5 text-xs font-medium text-[#59665c]">Folder <span className="font-normal text-[#879188]">· optional</span><Input autoComplete="off" defaultValue={activeList?.folderName ?? ''} list="worklist-folder-options" maxLength={80} name="folderName" placeholder="Leave empty to keep this list at the space level" /><datalist id="worklist-folder-options">{[...new Set(lists.map((list) => list.folderName).filter(Boolean))].map((folder) => <option key={folder} value={folder} />)}</datalist></label>
+                        <label className="grid gap-1.5 text-xs font-medium text-[#59665c]">Space<Input autoComplete="off" defaultValue={activeList?.spaceName ?? 'General'} list="worklist-space-options" maxLength={80} name="spaceName" onChange={(event) => state.setNewListSpace(event.target.value)} placeholder="e.g. Marketing" required /><datalist id="worklist-space-options">{state.spaces.map((space) => <option key={space.id} value={space.name} />)}</datalist></label>
+                        <label className="grid gap-1.5 text-xs font-medium text-[#59665c]">Folder <span className="font-normal text-[#879188]">· optional</span><Input autoComplete="off" defaultValue={activeList?.folderName ?? ''} list="worklist-folder-options" maxLength={80} name="folderName" placeholder="Leave empty to keep this list at the space level" /><datalist id="worklist-folder-options">{state.folders.map((folder) => <option key={folder.id} value={folder.name} />)}</datalist></label>
                         <DialogFooter className="mt-1"><Button onClick={() => setLocationOpen(false)} type="button" variant="outline">Cancel</Button><Button className="bg-[#173f35] text-white hover:bg-[#245246]" type="submit">Save location</Button></DialogFooter>
                     </form>
                 </DialogContent>
@@ -81,6 +118,13 @@ export const WorklistListWorkspace = ({ state, listActions, templateActions, act
                         <p className="text-xs text-[#879188]">Set to 0 to remove the budget. {activeList?.settings.budgetMinutes ? `Current budget: ${Math.floor(activeList.settings.budgetMinutes / 60)}h ${activeList.settings.budgetMinutes % 60}m.` : 'No budget is currently set.'}</p>
                         <DialogFooter><Button onClick={() => setBudgetOpen(false)} type="button" variant="outline">Cancel</Button><Button className="bg-[#173f35] text-white hover:bg-[#245246]" type="submit">Save budget</Button></DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+            <Dialog onOpenChange={setRequestFormOpen} open={requestFormOpen}>
+                <DialogContent className="max-w-lg rounded-2xl border-[#dce4da] p-6 sm:p-7">
+                    <DialogHeader className="text-left"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#668356]">Client intake</p><DialogTitle className="font-serif text-2xl font-normal text-[#203d33]">Request work for {activeList?.name ?? 'this list'}</DialogTitle><DialogDescription>Share a public form link so a client can send a task request without joining your workspace.</DialogDescription></DialogHeader>
+                    {requestFormToken ? <div className="mt-3 grid gap-3"><label className="grid gap-1.5 text-xs font-medium text-[#59665c]">Shareable form link<Input aria-label="Client request form link" readOnly value={requestFormUrl} /></label><Button className="bg-[#173f35] text-white hover:bg-[#245246]" onClick={() => { void navigator.clipboard.writeText(requestFormUrl).then(() => setPageNotice('Request form link copied.')) }} type="button"><Copy aria-hidden="true" className="size-4" />Copy link</Button><p className="text-xs leading-5 text-[#879188]">Creating another link will invalidate this one. Anyone with the active link can submit requests.</p></div> : <div className="mt-3 rounded-xl border border-[#e8ede5] bg-[#fbfcfa] p-4"><p className="text-sm text-[#425047]">{activeList?.requestFormEnabled ? 'A form is active, but its private link is no longer available in this session.' : 'No public form is active for this list.'}</p><p className="mt-1 text-xs leading-5 text-[#879188]">Generate a link to share. The link is stored as a hash and shown only once, so generating a replacement disables the previous link.</p></div>}
+                    <DialogFooter className="mt-4 flex-col gap-2 sm:flex-row"><Button disabled={requestFormBusy || !activeList?.requestFormEnabled} onClick={() => { void disableRequestForm() }} type="button" variant="outline">Disable form</Button><Button disabled={requestFormBusy || !activeList} onClick={() => { void generateRequestForm() }} type="button" className="bg-[#173f35] text-white hover:bg-[#245246]">{requestFormBusy ? 'Working…' : activeList?.requestFormEnabled ? 'Rotate link' : 'Create form link'}</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

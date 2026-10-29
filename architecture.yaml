@@ -445,6 +445,7 @@
     ],
     "allowedBuildDependencies": [
       "esbuild",
+      "protobufjs",
       "unrs-resolver"
     ],
     "lockfile": "pnpm-lock.yaml",

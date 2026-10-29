@@ -22,6 +22,13 @@ export type WorkItemRecord = Readonly<{
     clientRequest?: Readonly<{ contactName: string; contactEmail: string; request: string }> | null
     approvalStatus?: 'not_requested' | 'pending' | 'approved' | 'changes_requested'
     approvalFeedback?: string
+    approvalTokenHash?: string | null
+    approvalTokenExpiresAt?: Date | null
+    approvalRequestedAt?: Date | null
+    dueReminderSentFor?: string | null
+    approvalReminderSentAt?: Date | null
+    dueReminderClaimedFor?: string | null
+    approvalReminderClaimedAt?: Date | null
     timeSpentMinutes?: number
     createdBy: Types.ObjectId
     createdAt: Date
@@ -61,6 +68,13 @@ const workItemSchema = new Schema<WorkItemRecord>(
         },
         approvalStatus: { type: String, enum: ['not_requested', 'pending', 'approved', 'changes_requested'], default: 'not_requested' },
         approvalFeedback: { type: String, trim: true, maxlength: 2000, default: '' },
+        approvalTokenHash: { type: String, default: null, select: false },
+        approvalTokenExpiresAt: { type: Date, default: null, select: false },
+        approvalRequestedAt: { type: Date, default: null },
+        dueReminderSentFor: { type: String, default: null, select: false },
+        approvalReminderSentAt: { type: Date, default: null, select: false },
+        dueReminderClaimedFor: { type: String, default: null, select: false },
+        approvalReminderClaimedAt: { type: Date, default: null, select: false },
         timeSpentMinutes: { type: Number, min: 0, max: 10_000_000, default: 0 },
         createdBy: { type: Schema.Types.ObjectId, required: true }
     },

@@ -39,8 +39,8 @@ export const createErrorHandler =
         }
         logger.error('Unhandled API error.', {
             method: request.method,
-            path: request.originalUrl,
-            vercelRequestId: request.get('x-vercel-id'),
+            path: request.path,
+            requestId: response.getHeader('x-request-id') ?? request.get('x-vercel-id'),
             errorName: error instanceof Error ? error.name : 'UnknownError',
             errorMessage: error instanceof Error ? error.message : String(error),
             ...(error instanceof Error && error.stack ? { errorStack: error.stack } : {})

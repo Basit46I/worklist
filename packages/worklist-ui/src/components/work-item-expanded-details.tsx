@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactElement } from 'react'
 import { Button, Input } from '@workspace/ui/primitives'
-import type { WorkItem, WorkItemActivityClient, WorklistCommentClient, WorklistListOption } from '../model/index.js'
+import type { WorkItem, WorkItemActivityClient, WorkItemApprovalClient, WorklistCommentClient, WorklistListOption } from '../model/index.js'
 import { formatDate } from './worklist-presentation.js'
 import { WorkItemComments } from './work-item-comments.js'
 import { WorkItemActivityFeed } from './work-item-activity.js'
@@ -17,11 +17,12 @@ type WorkItemExpandedDetailsProps = Readonly<{
     commentRefreshItemId: string | null
     commentClient: WorklistCommentClient
     activityClient: WorkItemActivityClient
+    approvalClient: WorkItemApprovalClient
     onUpdate: (itemId: string, changes: Partial<WorkItem>) => void
     onCreateSubtask: (parentId: string, title: string) => void
 }>
 
-export const WorkItemExpandedDetails = ({ item, availableItems, lists, canEdit, expanded, commentRefreshSequence, commentRefreshItemId, commentClient, activityClient, onUpdate, onCreateSubtask }: WorkItemExpandedDetailsProps): ReactElement | null => {
+export const WorkItemExpandedDetails = ({ item, availableItems, lists, canEdit, expanded, commentRefreshSequence, commentRefreshItemId, commentClient, activityClient, approvalClient, onUpdate, onCreateSubtask }: WorkItemExpandedDetailsProps): ReactElement | null => {
     const [isEditingDescription, setIsEditingDescription] = useState(false)
     const [draftDescription, setDraftDescription] = useState(item.description)
     const [subtaskTitle, setSubtaskTitle] = useState('')
@@ -29,12 +30,24 @@ export const WorkItemExpandedDetails = ({ item, availableItems, lists, canEdit, 
     const [tagDraft, setTagDraft] = useState('')
     const [approvalFeedback, setApprovalFeedback] = useState(item.approvalFeedback ?? '')
     const [timeEntryDraft, setTimeEntryDraft] = useState('')
+    const [approvalBusy, setApprovalBusy] = useState(false)
+    const [approvalMessage, setApprovalMessage] = useState('')
     useEffect(() => { setApprovalFeedback(item.approvalFeedback ?? '') }, [item.id, item.approvalFeedback])
     const saveDescription = (): void => {
         const description = draftDescription.trim()
         onUpdate(item.id, { description })
         setDraftDescription(description)
         setIsEditingDescription(false)
+    }
+    const sendApprovalRequest = (): void => {
+        const email = item.clientRequest?.contactEmail
+        if (!email) return
+        setApprovalBusy(true)
+        setApprovalMessage('')
+        void approvalClient.request(item.id)
+            .then(() => { setApprovalMessage(`Review link sent to ${email}.`) })
+            .catch((error: unknown) => { setApprovalMessage(error instanceof Error ? error.message : 'Could not send the approval link.') })
+            .finally(() => { setApprovalBusy(false) })
     }
     const dependencyCandidates = availableItems.filter((candidate) => candidate.id !== item.id && candidate.listId === item.listId && !candidate.parentId)
     return (
@@ -138,10 +151,15 @@ export const WorkItemExpandedDetails = ({ item, availableItems, lists, canEdit, 
                         </section>}
                         <section aria-label="Client approval and feedback" className="rounded-lg border border-slate-200 bg-white p-3 sm:col-span-3">
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                                <div><h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Client approval</h3><p className="mt-1 text-xs text-slate-500">Team members record approval status and feedback here.</p></div>
+                                <div><h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Client approval</h3><p className="mt-1 text-xs text-slate-500">Send a secure review link to the client.</p></div>
                                 <select aria-label={`Approval status for ${item.title}`} className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm" disabled={!canEdit} onChange={(event) => { onUpdate(item.id, { approvalStatus: event.target.value as NonNullable<WorkItem['approvalStatus']> }) }} value={item.approvalStatus ?? 'not_requested'}>
                                     <option value="not_requested">Not requested</option><option value="pending">Awaiting approval</option><option value="approved">Approved</option><option value="changes_requested">Changes requested</option>
                                 </select>
+                            </div>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                {canEdit && item.clientRequest?.contactEmail && <Button className="h-9" disabled={approvalBusy} onClick={sendApprovalRequest} type="button" variant="outline">{approvalBusy ? 'Sending…' : 'Send approval link'}</Button>}
+                                {!item.clientRequest?.contactEmail && <p className="text-xs text-amber-700">Add a client request with an email address before requesting approval.</p>}
+                                {approvalMessage && <p aria-live="polite" className="text-xs text-slate-600">{approvalMessage}</p>}
                             </div>
                             <form className="mt-3 flex flex-wrap gap-2" onSubmit={(event) => { event.preventDefault(); onUpdate(item.id, { approvalFeedback: approvalFeedback.trim() }) }}>
                                 <Input aria-label={`Client feedback for ${item.title}`} className="min-w-56 flex-1" disabled={!canEdit} maxLength={2000} onChange={(event) => { setApprovalFeedback(event.target.value) }} placeholder="Client feedback or requested changes" value={approvalFeedback} />

@@ -13,6 +13,7 @@ export type {
     WorklistCommentClient,
     WorkItemActivity,
     WorkItemActivityClient,
+    WorkItemApprovalClient,
     WorklistGroup,
     WorklistListOption
 } from './types.js'

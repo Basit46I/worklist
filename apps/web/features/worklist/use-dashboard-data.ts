@@ -59,7 +59,7 @@ export const useDashboardData = () => {
         if (!previous) return
         setItems((current) => current.map((item) => item.id === itemId ? { ...item, ...changes } : item))
         setError('')
-        void updateWorkItem(itemId, changes)
+        void updateWorkItem(itemId, changes, previous.updatedAt)
             .then((updated) => setItems((current) => current.map((item) => item.id === itemId ? updated : item)))
             .catch((cause: unknown) => {
                 setItems((current) => current.map((item) => item.id === itemId ? previous : item))

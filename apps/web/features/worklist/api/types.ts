@@ -24,10 +24,15 @@ export type WorklistList = Readonly<{
     description: string
     spaceName: string
     folderName: string
+    spaceId?: string | null
+    folderId?: string | null
     isDefault: boolean
     archivedAt: string | null
+    requestFormEnabled?: boolean
     settings: WorklistListSettings
 }>
+export type WorklistSpace = Readonly<{ id: string; name: string; description: string; archivedAt: string | null }>
+export type WorklistFolder = Readonly<{ id: string; spaceId: string; name: string; archivedAt: string | null }>
 export type WorklistTemplate = Readonly<{
     id: string
     name: string

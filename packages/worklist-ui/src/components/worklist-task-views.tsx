@@ -9,6 +9,7 @@ import {
     type WorkItemColumn,
     type WorkItemColumnWidths,
     type WorkItemActivityClient,
+    type WorkItemApprovalClient,
     type WorkItemSortField,
     type WorklistCommentClient,
     type WorklistGroup,
@@ -33,6 +34,7 @@ const WorklistTable = ({
     commentRefreshItemId,
     commentClient,
     activityClient,
+    approvalClient,
     onToggleSelect,
     onSelectLoaded,
     onReorderColumns,
@@ -58,6 +60,7 @@ const WorklistTable = ({
     commentRefreshItemId: string | null
     commentClient: WorklistCommentClient
     activityClient: WorkItemActivityClient
+    approvalClient: WorkItemApprovalClient
     onToggleSelect: (itemId: string, checked: boolean) => void
     onSelectLoaded: (itemIds: readonly string[], checked: boolean) => void
     onReorderColumns: (source: WorkItemColumn, target: WorkItemColumn) => void
@@ -177,6 +180,7 @@ const WorklistTable = ({
                                 statuses={statuses}
                                 commentClient={commentClient}
                                 activityClient={activityClient}
+                                approvalClient={approvalClient}
                                 commentRefreshItemId={commentRefreshItemId}
                                 commentRefreshSequence={commentRefreshSequence}
                                 expanded={expandedIds.has(row.item.id)}

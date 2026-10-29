@@ -24,6 +24,7 @@ export const mapWithConcurrency = async <T, R>(items: readonly T[], concurrency:
 
 export const serialize = (item: {
     _id: unknown
+    updatedAt?: Date
     listId?: Types.ObjectId | null
     parentId?: Types.ObjectId | null
     title: string
@@ -44,6 +45,7 @@ export const serialize = (item: {
     timeSpentMinutes?: number
 }) => ({
     id: String(item._id),
+    ...(item.updatedAt ? { updatedAt: item.updatedAt.toISOString() } : {}),
     listId: item.listId ? String(item.listId) : '',
     parentId: item.parentId?.toHexString() ?? null,
     title: item.title,

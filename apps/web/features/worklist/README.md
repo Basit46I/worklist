@@ -12,6 +12,10 @@ Each List stores a Space name (default `General`) and an optional Folder name. T
 
 Each List also stores its ordered status names in its settings. Existing Lists keep the default `To do`, `In progress`, and `Done` workflow. Editors can set 2–12 unique statuses from the List controls. The API checks task creation, status updates, bulk updates, and moves against the destination List's workflow. A status currently used by tasks cannot be removed until those tasks are moved to another allowed status.
 
+## Public client request forms
+
+Owners and Editors can create a public intake link from a List's options. The raw token is generated once, stored only as a SHA-256 hash, and can be rotated or revoked. Anyone with the active link can submit their name, email, request details, and requested due date; the API creates a normal task in that List using its first workflow status. Public submissions are schema-validated, use a honeypot field, and have an IP-based rate limit; configure Redis to share that limit across API instances. A new link invalidates the prior one. The form does not grant clients workspace access or send email notifications.
+
 ## Dashboard and workspace navigation
 
 `/dashboard` summarizes tasks loaded from the authenticated Lists and paginated Work Items API. Its scope selector, status totals, due-soon queue, priority/assignee workload, and per-List progress use saved workspace data rather than sample values. The optional **My tasks** control filters the summary and deadline queue by the signed-in user's display name; task assignment is still a free-text field, so teams should use consistent member names. The attention panels surface unassigned tasks, pending/requested approval, tasks blocked by unfinished or missing dependencies, and Lists whose tracked time is over their configured budget. Work Item refresh events reload the dashboard. The desktop sidebar and mobile bottom navigation connect the Dashboard and Worklist; account actions use the existing session sign-out endpoint.
@@ -33,6 +37,13 @@ The Dashboard composes the saved workspace data into an editable status board, a
 - Authenticated team refresh events use a process-local server-sent event hub. They refresh connected clients but are not a durable notification inbox and do not support cross-instance delivery.
 - The 10,000-task performance target has not been benchmarked. Measure representative query and render workloads before claiming that target.
 
+## JSON backup restore and database recovery
+
+The Worklist data tools can download a versioned JSON backup for the active List and restore it into a selected List. Restore validates the backup format, size, IDs, and task references before writing. It creates copies; it does not overwrite or delete current records. If a network or database error interrupts the import, the UI reports that some tasks may already have been created so the user can avoid blindly repeating the restore.
+
+This application-level export is not a substitute for automatic database backups. Configure scheduled snapshots and point-in-time recovery in the MongoDB Atlas project that owns the production cluster: open Atlas **Database → your cluster → Backup**, enable Cloud Backup, choose the retention policy, and enable point-in-time restore if the cluster tier supports it. Keep a separate recovery procedure and periodically restore a snapshot into a temporary cluster before switching production data. Availability, retention, and restore options depend on the Atlas plan; this repository cannot enable provider account settings or perform a production restore by itself.
+
 ## Share a local preview
 
 Install the ngrok CLI and authenticate it with your ngrok account. Then run `node codebase/cli/repo.mjs run web:dev:share` from the repository root. This starts ngrok and both development servers, prints the HTTPS URL, and routes browser API requests through the web app so teammates only need one link. Keep the command running while the preview is in use; stopping it closes the public tunnel. This is a temporary development preview, not a production deployment.
+Client request forms create tasks from a revocable, hashed public link. Client approvals use expiring one-time links; approvals and requested changes appear in task activity. The daily Vercel cron sends due-soon reminders to a matching team assignee, falling back to the client requester email when present, and re-sends pending approval links after three days. Configure SMTP and `CRON_SECRET` in production for delivery.

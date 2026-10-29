@@ -5,7 +5,7 @@ import { Archive, Plus, RotateCcw, Search } from 'lucide-react'
 import { Button } from '@workspace/ui/primitives'
 import { WorklistBoard, WorklistTable } from '@workspace/worklist-ui'
 import type { WorklistGroup } from '@workspace/worklist-ui'
-import { createWorkItemComment, fetchWorkItemComments, fetchWorkItemActivity } from '../api'
+import { createWorkItemComment, fetchWorkItemComments, fetchWorkItemActivity, requestWorkItemApproval } from '../api'
 import type { useWorklistPageState } from '../use-worklist-page-state'
 import type { useWorklistListActions } from '../use-worklist-list-actions'
 import type { useWorklistViewActions } from '../use-worklist-view-actions'
@@ -15,6 +15,7 @@ import { canEditWorkspace } from '../permissions'
 import { summarizeDashboardItems } from '../dashboard-model'
 import { DashboardStatCards } from './dashboard-panels'
 import { CalendarViewPanel } from './calendar-page'
+import { WorklistDataTools } from './worklist-data-tools'
 
 export type WorklistResultsPanelProps = Readonly<{
     state: ReturnType<typeof useWorklistPageState>
@@ -38,6 +39,7 @@ export type WorklistResultsPanelProps = Readonly<{
 
 const commentClient = { list: fetchWorkItemComments, create: createWorkItemComment } as const
 const activityClient = { list: fetchWorkItemActivity } as const
+const approvalClient = { request: requestWorkItemApproval } as const
 
 export const WorklistResultsPanel = ({ state, data, actions, user }: WorklistResultsPanelProps): ReactElement => {
     const { search, statusFilter, filters, setSearch, setStatusFilter, setFilters, setFilterLogic, setActiveSavedViewId, setShowNewItem, setNewStatus, viewMode, lists, visibleColumns, columnWidths, commentRefresh, nextCursor, sortDirection, sortField, includeArchivedItems, setIncludeArchivedItems } = state
@@ -52,6 +54,7 @@ export const WorklistResultsPanel = ({ state, data, actions, user }: WorklistRes
     return (
         <>
             <section aria-label="Project tasks" className="overflow-hidden">
+            <WorklistDataTools state={state} />
             {viewMode === 'list' && <div className="flex justify-end border-b border-[#e8ede6] bg-[#fbfcfa] px-3 py-2">
                 <Button className="h-8 gap-1.5 rounded-md border-[#dce4da] bg-white px-2.5 text-xs font-medium text-[#526b58] shadow-none hover:border-[#b8cbbd] hover:bg-[#edf4ed] hover:text-[#245d43]" onClick={() => setIncludeArchivedItems((value) => !value)} variant="outline">
                     {includeArchivedItems ? <RotateCcw aria-hidden="true" className="size-3.5" /> : <Archive aria-hidden="true" className="size-3.5" />}
@@ -144,6 +147,7 @@ export const WorklistResultsPanel = ({ state, data, actions, user }: WorklistRes
                             columns={visibleColumns}
                             commentClient={commentClient}
                             activityClient={activityClient}
+                            approvalClient={approvalClient}
                             commentRefreshItemId={commentRefresh.itemId}
                             commentRefreshSequence={commentRefresh.sequence}
                             direction={sortDirection}

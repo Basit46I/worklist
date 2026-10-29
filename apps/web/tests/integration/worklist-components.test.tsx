@@ -37,6 +37,7 @@ void test('calendar shows duration bars inside the month grid with resize handle
 void test('archived task rows show Restore while active task rows show Archive', () => {
     const renderRow = (archivedAt: string | null): string => renderToStaticMarkup(<table><tbody><WorkItemRow
         activityClient={{ list: async () => [] }}
+        approvalClient={{ request: async () => {} }}
         availableItems={[]}
         canEdit
         columnWidths={{ status: 150, priority: 120, assignee: 180, dueDate: 140 }}

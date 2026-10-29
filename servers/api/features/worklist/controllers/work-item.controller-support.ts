@@ -50,3 +50,4 @@ const routeParameter = (request: Request, name: string): string => {
 export const getItemId = (request: Request): string => routeParameter(request, 'itemId')
 export const getListId = (request: Request): string => routeParameter(request, 'listId')
 export const getTemplateId = (request: Request): string => routeParameter(request, 'templateId')
+export const getSpaceId = (request: Request): string => routeParameter(request, 'spaceId')

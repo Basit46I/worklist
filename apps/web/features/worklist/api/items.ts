@@ -19,8 +19,11 @@ export const fetchWorkItemPage = async (query: WorkItemListQuery, cursor?: strin
 }
 export const createWorkItem = async (input: Omit<WorkItem, 'id'>): Promise<WorkItem> =>
     (await request<{ item: WorkItem }>('/work-items', { method: 'POST', body: JSON.stringify(input) })).item
-export const updateWorkItem = async (id: string, changes: Partial<Omit<WorkItem, 'id'>>): Promise<WorkItem> =>
-    (await request<{ item: WorkItem }>(`/work-items/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(changes) })).item
+export const updateWorkItem = async (id: string, changes: Partial<Omit<WorkItem, 'id'>>, expectedUpdatedAt?: string): Promise<WorkItem> =>
+    (await request<{ item: WorkItem }>(`/work-items/${encodeURIComponent(id)}`, { method: 'PATCH', ...(expectedUpdatedAt ? { headers: { 'If-Match': `"${expectedUpdatedAt}"` } } : {}), body: JSON.stringify(changes) })).item
+export const requestWorkItemApproval = async (id: string): Promise<void> => {
+    await request(`/work-items/${encodeURIComponent(id)}/request-approval`, { method: 'POST' })
+}
 export const deleteWorkItem = (id: string): Promise<void> => request<void>(`/work-items/${encodeURIComponent(id)}`, { method: 'DELETE' })
 export const setWorkItemArchived = async (id: string, archived: boolean): Promise<WorkItem> =>
     (await request<{ item: WorkItem }>(`/work-items/${encodeURIComponent(id)}/${archived ? 'archive' : 'restore'}`, { method: 'POST' })).item

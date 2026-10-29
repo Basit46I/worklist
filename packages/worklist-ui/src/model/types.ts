@@ -5,6 +5,7 @@ export type WorkItemRecurrence = Readonly<{ frequency: 'daily' | 'weekly' | 'mon
 export type WorkItemClientRequest = Readonly<{ contactName: string; contactEmail: string; request: string }>
 export type WorkItem = Readonly<{
     id: string
+    updatedAt?: string
     listId?: string
     parentId?: string | null
     title: string
@@ -41,6 +42,7 @@ export type WorklistCommentClient = Readonly<{
 }>
 export type WorkItemActivity = Readonly<{ id: string; actorName: string; action: 'created' | 'updated' | 'commented' | 'deleted' | 'approval_requested' | 'approved' | 'changes_requested' | 'time_logged'; summary: string; createdAt: string }>
 export type WorkItemActivityClient = Readonly<{ list: (itemId: string) => Promise<readonly WorkItemActivity[]> }>
+export type WorkItemApprovalClient = Readonly<{ request: (itemId: string) => Promise<void> }>
 export type SavedViewOption = Readonly<{ id: string; name: string; visibility: 'private' | 'team'; canManage?: boolean }>
 
 export const workItemStatuses: readonly WorkItemStatus[] = ['To do', 'In progress', 'Done']

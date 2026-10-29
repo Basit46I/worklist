@@ -137,6 +137,10 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
             if (changes.listId && !(await lists.findActive(identity.teamId, changes.listId))) throw missingItem()
             const currentItem = await repository.find(identity.teamId, getItemId(request))
             if (!currentItem) throw missingItem()
+            const ifMatch = request.get('if-match')
+            const expectedUpdatedAt = ifMatch?.replace(/^W\//, '').replace(/^"|"$/g, '')
+            if (expectedUpdatedAt && currentItem.updatedAt.toISOString() !== expectedUpdatedAt)
+                throw createApplicationError({ code: ERROR_CODES.conflict, message: 'This task changed since you opened it. Refresh it and reapply your edit.', status: HTTP_STATUS.conflict })
             const nextStartDate = changes.startDate?.toISOString().slice(0, 10) ?? currentItem.startDate
             const nextDueDate = changes.dueDate?.toISOString().slice(0, 10) ?? currentItem.dueDate
             if (nextStartDate > nextDueDate)
@@ -163,8 +167,11 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
                     message: 'Complete this task’s dependencies before marking it done.',
                     status: HTTP_STATUS.conflict
                 })
-            const item = await repository.update(identity.teamId, getItemId(request), changes)
-            if (!item) throw missingItem()
+            const item = await repository.update(identity.teamId, getItemId(request), changes, expectedUpdatedAt ? new Date(expectedUpdatedAt) : undefined)
+            if (!item) {
+                if (expectedUpdatedAt) throw createApplicationError({ code: ERROR_CODES.conflict, message: 'This task changed since you opened it. Refresh it and reapply your edit.', status: HTTP_STATUS.conflict })
+                throw missingItem()
+            }
             if (changes.approvalStatus !== undefined && changes.approvalStatus !== currentItem.approvalStatus) {
                 const action = changes.approvalStatus === 'pending' ? 'approval_requested' : changes.approvalStatus === 'approved' ? 'approved' : changes.approvalStatus === 'changes_requested' ? 'changes_requested' : 'updated'
                 const summary = changes.approvalStatus === 'changes_requested'

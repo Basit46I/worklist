@@ -31,4 +31,16 @@ export type WorkItemController = Readonly<{
     handlePostWorkItemsItemIdRestore: RequestHandler
     handlePostWorkItemsItemIdDuplicate: RequestHandler
     handleDeleteWorkItemsItemId: RequestHandler
+    handleGetSpaces: RequestHandler
+    handlePostSpaces: RequestHandler
+    handleGetSpaceFolders: RequestHandler
+    handlePostSpaceFolders: RequestHandler
+    handlePostListRequestForm: RequestHandler
+    handleDeleteListRequestForm: RequestHandler
+    handleGetClientRequestForm: RequestHandler
+    handlePostClientRequestForm: RequestHandler
+    handlePostRequestApproval: RequestHandler
+    handleGetClientApproval: RequestHandler
+    handlePostClientApproval: RequestHandler
+    handleGetScheduledReminders: RequestHandler
 }>

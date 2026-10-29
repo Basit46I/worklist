@@ -17,5 +17,10 @@ export const readApiEnvironment = (source: ApiEnvironmentSource = process.env): 
         SMTP_USER: source.SMTP_USER,
         SMTP_PASSWORD: source.SMTP_PASSWORD,
         EMAIL_FROM: source.EMAIL_FROM,
+        CRON_SECRET: source.CRON_SECRET,
+        METRICS_BEARER_TOKEN: source.METRICS_BEARER_TOKEN,
+        ALERT_WEBHOOK_URL: source.ALERT_WEBHOOK_URL,
+        OTEL_EXPORTER_OTLP_ENDPOINT: source.OTEL_EXPORTER_OTLP_ENDPOINT,
+        OTEL_EXPORTER_OTLP_HEADERS: source.OTEL_EXPORTER_OTLP_HEADERS,
         LOG_LEVEL: source.LOG_LEVEL
     })

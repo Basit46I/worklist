@@ -3,6 +3,7 @@ import { filterWorkItems, groupWorkItems, sortWorkItems, workItemStatuses } from
 import type { WorkItemListQuery } from './api'
 import type { useWorklistPageState } from './use-worklist-page-state'
 import { useWorklistPageEffects, type WorklistPageRouter } from './use-worklist-page-effects'
+import { useWorklistHierarchyData } from './use-worklist-hierarchy-data'
 import type { WorklistGroup } from '@workspace/worklist-ui'
 
 type PageState = ReturnType<typeof useWorklistPageState>
@@ -16,6 +17,9 @@ export const useWorklistPageData = (route: Route, router: WorklistPageRouter, st
         setItems,
         lists,
         setLists,
+        spaces,
+        setSpaces,
+        setFolders,
         activeListId,
         setActiveListId,
         user,
@@ -52,6 +56,7 @@ export const useWorklistPageData = (route: Route, router: WorklistPageRouter, st
         setLoadedListKey,
         setCommentRefresh
     } = state
+    useWorklistHierarchyData({ user, spaces, newListSpace: state.newListSpace, setSpaces, setFolders, setPageError })
     const listQuery = useMemo<WorkItemListQuery>(
         () => ({
             listId: activeListId,

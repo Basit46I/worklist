@@ -9,9 +9,12 @@ export type WorklistListRecord = Readonly<{
     description: string
     spaceName: string
     folderName: string
+    spaceId?: Types.ObjectId
+    folderId?: Types.ObjectId
     nameKey: string
     isDefault: boolean
     archivedAt: Date | null
+    requestFormTokenHash?: string | null
     settings: Readonly<{
         sortField: 'title' | 'status' | 'priority' | 'assignee' | 'dueDate'
         sortDirection: 'asc' | 'desc'
@@ -33,9 +36,12 @@ const listSchema = new Schema<WorklistListRecord>(
         description: { type: String, trim: true, maxlength: 500, default: '' },
         spaceName: { type: String, trim: true, maxlength: 80, default: 'General' },
         folderName: { type: String, trim: true, maxlength: 80, default: '' },
+        spaceId: { type: Schema.Types.ObjectId, index: true },
+        folderId: { type: Schema.Types.ObjectId, index: true },
         nameKey: { type: String, required: true },
         isDefault: { type: Boolean, required: true, default: false },
         archivedAt: { type: Date, default: null },
+        requestFormTokenHash: { type: String, default: null, select: false, index: true },
         settings: {
             sortField: { type: String, enum: ['title', 'status', 'priority', 'assignee', 'dueDate'], required: true, default: 'dueDate' },
             sortDirection: { type: String, enum: ['asc', 'desc'], required: true, default: 'asc' },

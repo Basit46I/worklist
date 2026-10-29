@@ -12,7 +12,13 @@ export const createApiConfig = (environment: ValidatedApiEnvironment): ApiConfig
         }),
         trustProxyHops: environment.API_TRUST_PROXY_HOPS ?? 0,
         webOrigin: environment.WEB_ORIGIN,
+        ...(environment.CRON_SECRET ? { cronSecret: environment.CRON_SECRET } : {}),
         logLevel: environment.LOG_LEVEL,
+        ...(environment.METRICS_BEARER_TOKEN ? { metricsBearerToken: environment.METRICS_BEARER_TOKEN } : {}),
+        ...(environment.ALERT_WEBHOOK_URL ? { alertWebhookUrl: environment.ALERT_WEBHOOK_URL } : {}),
+        ...(environment.OTEL_EXPORTER_OTLP_ENDPOINT
+            ? { telemetry: Object.freeze({ endpoint: environment.OTEL_EXPORTER_OTLP_ENDPOINT, ...(environment.OTEL_EXPORTER_OTLP_HEADERS ? { headers: environment.OTEL_EXPORTER_OTLP_HEADERS } : {}) }) }
+            : {}),
         ...(environment.MONGODB_URI ? { mongodbUri: environment.MONGODB_URI } : {}),
         ...(environment.REDIS_URL ? { redisUrl: environment.REDIS_URL } : {}),
         ...(environment.SMTP_HOST && environment.SMTP_PORT && environment.SMTP_USER && environment.SMTP_PASSWORD && environment.EMAIL_FROM

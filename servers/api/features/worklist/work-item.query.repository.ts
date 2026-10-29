@@ -7,7 +7,7 @@ type WorkItemFilterQuery = Parameters<typeof WorkItemModel.collection.find>[0]
 export const createWorkItemQueryRepository = () => Object.freeze({
         find: async (teamId: string, itemId: string) => {
             if (!mongoose.Types.ObjectId.isValid(itemId)) return null
-            const item = await WorkItemModel.findOne({ _id: itemId, teamId }).select({ _id: 1, listId: 1, startDate: 1, dueDate: 1, status: 1, dependsOn: 1, approvalStatus: 1, approvalFeedback: 1, timeSpentMinutes: 1 }).lean().exec()
+            const item = await WorkItemModel.findOne({ _id: itemId, teamId }).select({ _id: 1, listId: 1, startDate: 1, dueDate: 1, status: 1, dependsOn: 1, approvalStatus: 1, approvalFeedback: 1, timeSpentMinutes: 1, updatedAt: 1 }).lean().exec()
             return item ? {
                 listId: item.listId?.toHexString() ?? '',
                 startDate: (item.startDate ?? item.dueDate).toISOString().slice(0, 10),
@@ -16,7 +16,8 @@ export const createWorkItemQueryRepository = () => Object.freeze({
                 dependsOn: (item.dependsOn ?? []).map((id) => id.toHexString()),
                 approvalStatus: item.approvalStatus ?? 'not_requested',
                 approvalFeedback: item.approvalFeedback ?? '',
-                timeSpentMinutes: item.timeSpentMinutes ?? 0
+                timeSpentMinutes: item.timeSpentMinutes ?? 0,
+                updatedAt: item.updatedAt
             } : null
         },
         dependenciesComplete: async (teamId: string, dependencyIds: readonly string[]) => {

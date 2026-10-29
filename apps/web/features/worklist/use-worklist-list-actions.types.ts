@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import type { WorklistList, WorklistUser } from './api'
+import type { WorklistList, WorklistSpace, WorklistUser } from './api'
 import type { WorkItemColumn, WorkItemColumnWidths, WorkItemFilter, WorkItemSortField, WorkItemStatus } from './model'
 
 type ListSettingsState = Readonly<{
@@ -21,6 +21,7 @@ export type UseWorklistListActionsOptions = ListSettingsState &
     Readonly<{
         lists: readonly WorklistList[]
         setLists: Dispatch<SetStateAction<readonly WorklistList[]>>
+        setSpaces: Dispatch<SetStateAction<readonly WorklistSpace[]>>
         activeListId: string
         setActiveListId: Dispatch<SetStateAction<string>>
         user: WorklistUser | null

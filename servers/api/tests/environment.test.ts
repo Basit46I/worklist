@@ -50,6 +50,32 @@ void test('accepts explicit API request-rate-limit settings', () => {
     assert.deepEqual(createApiConfig(environment).rateLimit, { max: 25, windowMs: 5_000 })
 })
 
+void test('maps OTLP export and alert webhook settings into API configuration', () => {
+    const config = createApiConfig(readApiEnvironment({
+        NODE_ENV: 'production',
+        API_HOST: '0.0.0.0',
+        API_PORT: '4000',
+        WEB_ORIGIN: 'https://example.test',
+        LOG_LEVEL: 'info',
+        OTEL_EXPORTER_OTLP_ENDPOINT: 'https://collector.example.test',
+        OTEL_EXPORTER_OTLP_HEADERS: 'authorization=Bearer%20test-token',
+        ALERT_WEBHOOK_URL: 'https://hooks.example.test/worklist'
+    }))
+    assert.deepEqual(config.telemetry, { endpoint: 'https://collector.example.test', headers: 'authorization=Bearer%20test-token' })
+    assert.equal(config.alertWebhookUrl, 'https://hooks.example.test/worklist')
+})
+
+void test('rejects non-HTTPS alert webhook destinations', () => {
+    assert.throws(() => readApiEnvironment({
+        NODE_ENV: 'test',
+        API_HOST: '127.0.0.1',
+        API_PORT: '4000',
+        WEB_ORIGIN: 'http://localhost:3000',
+        LOG_LEVEL: 'silent',
+        ALERT_WEBHOOK_URL: 'http://hooks.example.test/worklist'
+    }), ZodError)
+})
+
 void test('rejects invalid server environment input', () => {
     assert.throws(() => readApiEnvironment({ API_PORT: '70000' }))
     assert.throws(() => readApiEnvironment({ API_TRUST_PROXY_HOPS: '-1' }))

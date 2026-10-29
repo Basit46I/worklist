@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { SavedView, WorklistList, WorklistTeamMember, WorklistTemplate, WorklistUser } from './api'
+import type { SavedView, WorklistFolder, WorklistList, WorklistSpace, WorklistTeamMember, WorklistTemplate, WorklistUser } from './api'
 import { defaultWorkItemColumnWidths } from './model'
 import type { WorkItem, WorkItemColumn, WorkItemColumnWidths, WorkItemFilter, WorkItemPriority, WorkItemSortField, WorkItemStatus } from './model'
 import { dateInOneWeek } from '@workspace/worklist-ui'
@@ -9,6 +9,8 @@ export type BulkOperationDetail = Readonly<{ itemId: string; title: string; outc
 export const useWorklistPageState = () => {
     const [items, setItems] = useState<readonly WorkItem[]>([])
     const [lists, setLists] = useState<readonly WorklistList[]>([])
+    const [spaces, setSpaces] = useState<readonly WorklistSpace[]>([])
+    const [folders, setFolders] = useState<readonly WorklistFolder[]>([])
     const [activeListId, setActiveListId] = useState('')
     const [listNameDraft, setListNameDraft] = useState('')
     const [newListDescription, setNewListDescription] = useState('')
@@ -96,6 +98,10 @@ export const useWorklistPageState = () => {
         setItems,
         lists,
         setLists,
+        spaces,
+        setSpaces,
+        folders,
+        setFolders,
         activeListId,
         setActiveListId,
         listNameDraft,

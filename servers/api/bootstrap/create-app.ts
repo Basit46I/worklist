@@ -6,9 +6,12 @@ import { createHealthRoutes } from '../features/health/index.js'
 import { createAuthRoutes } from '../features/auth/index.js'
 import { createWorkItemRoutes } from '../features/worklist/index.js'
 import { createWorkItemEventHub } from '../features/worklist/index.js'
-import { createSmtpEmailSender } from '../integrations/index.js'
+import { createOperationsRoutes } from '../features/operations/index.js'
+import { createAlertWebhook, createSmtpEmailSender } from '../integrations/index.js'
 import type { MongoDbIntegration } from '../integrations/index.js'
 import type { RateLimitStoreFactory } from '../integrations/index.js'
+import { createPrometheusIntegration } from '../integrations/index.js'
+import { createOperationsLogRepository } from '../features/operations/index.js'
 import { createApiRateLimit, createCorsMiddleware, createErrorHandler, createNotFoundHandler, createRequestTelemetry } from '../middleware/index.js'
 
 type AppDependencies = Readonly<{
@@ -22,7 +25,11 @@ export const createApp = ({ config, logger, database, rateLimitStoreFactory }: A
     const app = express()
     app.disable('x-powered-by')
     app.set('trust proxy', config.trustProxyHops ?? 0)
-    app.use(createRequestTelemetry(logger))
+    const metrics = createPrometheusIntegration()
+    const logs = createOperationsLogRepository(logger)
+    const alertWebhook = createAlertWebhook(config.alertWebhookUrl, logger)
+    const persistenceAvailable = database?.isConnected ?? (() => false)
+    app.use(createRequestTelemetry({ logger, metrics, logs, alerts: alertWebhook, isPersistenceAvailable: persistenceAvailable }))
     app.use(createApiRateLimit({ ...config.rateLimit, ...(rateLimitStoreFactory ? { store: rateLimitStoreFactory('api-global') } : {}) }))
     const webOrigins =
         config.environment === 'development'
@@ -36,16 +43,23 @@ export const createApp = ({ config, logger, database, rateLimitStoreFactory }: A
         createHealthRoutes({
             environment: config.environment,
             serviceName: apiRuntime.serviceName,
-            isPersistenceAvailable: database?.isConnected ?? (() => false)
+            isPersistenceAvailable: persistenceAvailable
         }),
         createAuthRoutes({
             webOrigins,
             secureCookies: config.environment === 'production',
-            isPersistenceAvailable: database?.isConnected ?? (() => false),
+            isPersistenceAvailable: persistenceAvailable,
             ...(rateLimitStoreFactory ? { rateLimitStoreFactory } : {}),
             ...(emailSender ? { emailSender } : {})
         }),
-        createWorkItemRoutes(webOrigins, database?.isConnected ?? (() => false), workItemEvents)
+        createWorkItemRoutes(webOrigins, persistenceAvailable, workItemEvents, rateLimitStoreFactory, { webOrigin: config.webOrigin, ...(config.cronSecret ? { cronSecret: config.cronSecret } : {}), ...(emailSender ? { emailSender } : {}) }),
+        createOperationsRoutes({
+            metrics,
+            logs,
+            isPersistenceAvailable: persistenceAvailable,
+            otlpExportConfigured: Boolean(config.telemetry),
+            ...(config.metricsBearerToken ? { metricsBearerToken: config.metricsBearerToken } : {})
+        })
     ]
     for (const featureRouter of featureRouters) app.use(featureRouter)
     app.use(createNotFoundHandler())
