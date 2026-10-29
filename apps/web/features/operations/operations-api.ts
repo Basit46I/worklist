@@ -33,7 +33,7 @@ export type OperationsSnapshot = z.infer<typeof operationsResponseSchema>
 const operationsLogsSchema = z.object({
     logs: z.array(z.object({
         id: z.string(), level: z.enum(['info', 'warn', 'error']), message: z.string(), createdAt: z.string(),
-        method: z.string(), route: z.string(), statusCode: z.number(), durationMs: z.number(), requestId: z.string(),
+        method: z.string(), route: z.string(), statusCode: z.number(), errorCode: z.string().optional(), errorMessage: z.string().optional(), durationMs: z.number(), requestId: z.string(),
         traceId: z.string().optional(), spanId: z.string().optional(), userId: z.string().optional(), teamId: z.string().optional()
     })),
     nextBefore: z.string().nullable()

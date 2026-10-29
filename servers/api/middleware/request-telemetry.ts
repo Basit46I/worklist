@@ -13,6 +13,8 @@ type OperationsLogEntry = Readonly<{
     method: string
     route: string
     statusCode: number
+    errorCode?: string
+    errorMessage?: string
     durationMs: number
     requestId: string
     traceId?: string
@@ -22,6 +24,7 @@ type OperationsLogEntry = Readonly<{
 }>
 
 type RequestWithIdentity = Readonly<{ authIdentity?: Readonly<{ id: string; teamId: string }> }>
+type OperationsError = Readonly<{ code: string; message: string }>
 
 export const createRequestTelemetry =
     ({ logger, metrics, logs, alerts, isPersistenceAvailable }: Readonly<{ logger: Logger; metrics: OperationsMetrics; logs?: Readonly<{ append: (entry: OperationsLogEntry) => Promise<void> }>; alerts?: AlertNotifier; isPersistenceAvailable?: () => boolean }>): RequestHandler =>
@@ -41,6 +44,7 @@ export const createRequestTelemetry =
             const route = routeSegment ? `${request.baseUrl}${routeSegment}` : 'unmatched'
             const durationMs = Math.max(0, Math.round(performance.now() - startedAt))
             const identity = (request as typeof request & RequestWithIdentity).authIdentity
+            const operationsError = response.locals.operationsError as OperationsError | undefined
             span.updateName(`${request.method} ${route}`)
             span.setAttribute('http.request.method', request.method)
             span.setAttribute('http.route', route)
@@ -55,6 +59,7 @@ export const createRequestTelemetry =
                 method: request.method,
                 route,
                 statusCode: response.statusCode,
+                ...(operationsError ? { errorCode: operationsError.code, errorMessage: operationsError.message.slice(0, 500) } : {}),
                 durationMs,
                 requestId,
                 createdAt: new Date(),

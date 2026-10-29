@@ -8,6 +8,8 @@ export type OperationsLogEntry = Readonly<{
     method: string
     route: string
     statusCode: number
+    errorCode?: string
+    errorMessage?: string
     durationMs: number
     requestId: string
     traceId?: string
@@ -28,6 +30,8 @@ const schema = new Schema<StoredOperationsLog>(
         method: { type: String, required: true },
         route: { type: String, required: true },
         statusCode: { type: Number, required: true },
+        errorCode: { type: String, maxlength: 80 },
+        errorMessage: { type: String, maxlength: 500 },
         durationMs: { type: Number, required: true },
         requestId: { type: String, required: true },
         traceId: { type: String },
@@ -52,7 +56,7 @@ export const createOperationsLogRepository = (logger?: Logger) => Object.freeze(
         if (mongoose.connection.readyState !== mongoose.ConnectionStates.connected) return
         const createdAt = entry.createdAt
         try {
-            const searchText = [entry.message, entry.method, entry.route, entry.requestId, entry.traceId, entry.spanId, entry.userId].filter(Boolean).join(' ')
+            const searchText = [entry.message, entry.errorCode, entry.errorMessage, entry.method, entry.route, entry.requestId, entry.traceId, entry.spanId, entry.userId].filter(Boolean).join(' ')
             await OperationsLogModel.create({ ...entry, searchText, expiresAt: new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1_000) })
         } catch (cause) {
             // Logging must never fail or delay the user request.

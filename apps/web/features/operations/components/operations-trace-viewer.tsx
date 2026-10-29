@@ -23,6 +23,8 @@ const TraceDetails = ({ trace }: Readonly<{ trace: Trace }>): ReactElement => (
         <Detail label="Trace ID" value={trace.traceId ?? 'Not available for this request'} />
         <Detail label="Span ID" value={trace.spanId ?? 'Not available for this request'} />
         <Detail label="User ID" value={trace.userId ?? 'Anonymous request'} />
+        {trace.errorCode && <Detail label="Error code" value={trace.errorCode} />}
+        {trace.errorMessage && <div className="sm:col-span-2"><Detail label="Why this request failed" value={trace.errorMessage} /></div>}
         <p className="text-[#718076] sm:col-span-2">Use the request ID to find this call in Central log search. When a trace ID is present, use it to correlate distributed spans in your configured OpenTelemetry backend.</p>
     </div>
 )

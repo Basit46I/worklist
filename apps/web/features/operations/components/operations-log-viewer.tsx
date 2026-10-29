@@ -56,7 +56,7 @@ export const OperationsLogViewer = (): ReactElement => {
             {page.logs.map((log) => <article className="grid gap-2 px-4 py-3 text-xs sm:grid-cols-[145px_65px_1fr] sm:px-5" key={log.id}>
                 <time className="text-[#77867b]" dateTime={log.createdAt}>{new Date(log.createdAt).toLocaleString()}</time>
                 <span className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${log.level === 'error' ? 'bg-rose-50 text-rose-800' : log.level === 'warn' ? 'bg-amber-50 text-amber-800' : 'bg-[#edf5ed] text-[#387451]'}`}>{log.level}</span>
-                <div className="min-w-0"><p className="font-medium text-[#3c5043]">{log.method} {log.route} · {log.statusCode} · {log.durationMs} ms</p><p className="mt-1 break-all font-mono text-[10px] text-[#718076]">Request {log.requestId}{log.traceId ? ` · Trace ${log.traceId}` : ''}{log.userId ? ` · User ${log.userId}` : ''}</p></div>
+                <div className="min-w-0"><p className="font-medium text-[#3c5043]">{log.method} {log.route} · {log.statusCode} · {log.durationMs} ms</p>{log.errorMessage && <p className="mt-1 text-[#8a5520]">{log.errorCode ? `${log.errorCode}: ` : ''}{log.errorMessage}</p>}<p className="mt-1 break-all font-mono text-[10px] text-[#718076]">Request {log.requestId}{log.traceId ? ` · Trace ${log.traceId}` : ''}{log.userId ? ` · User ${log.userId}` : ''}</p></div>
             </article>)}
             {!page.logs.length && <p className="px-5 py-8 text-center text-xs text-[#89948b]">{loading ? 'Searching logs…' : 'No matching logs. New requests appear here when the database is connected.'}</p>}
         </div>

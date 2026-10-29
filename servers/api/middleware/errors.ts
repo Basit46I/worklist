@@ -20,6 +20,7 @@ export const createErrorHandler =
     ({ logger }: { logger: Logger }): ErrorRequestHandler =>
     (error: unknown, request, response, _next) => {
         if (error instanceof ZodError) {
+            response.locals.operationsError = { code: ERROR_CODES.validation, message: ERROR_MESSAGES.validation }
             const body: ApiErrorResponse = {
                 error: { code: ERROR_CODES.validation, message: ERROR_MESSAGES.validation, details: error.issues }
             }
@@ -27,6 +28,7 @@ export const createErrorHandler =
             return
         }
         if (isApplicationError(error)) {
+            response.locals.operationsError = { code: error.code, message: error.message }
             const body: ApiErrorResponse = {
                 error: {
                     code: error.code,
@@ -36,6 +38,10 @@ export const createErrorHandler =
             }
             response.status(error.status).json(body)
             return
+        }
+        response.locals.operationsError = {
+            code: ERROR_CODES.internal,
+            message: ERROR_MESSAGES.internal
         }
         logger.error('Unhandled API error.', {
             method: request.method,
