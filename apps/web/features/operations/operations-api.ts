@@ -53,8 +53,9 @@ export const fetchOperationsSnapshot = async (): Promise<OperationsSnapshot> => 
     return parsed.data
 }
 
-export const fetchOperationsLogs = async (query: Readonly<{ search: string; level: 'all' | 'info' | 'warn' | 'error'; before?: string }>): Promise<OperationsLogsPage> => {
+export const fetchOperationsLogs = async (query: Readonly<{ search: string; level: 'all' | 'info' | 'warn' | 'error'; outcome?: 'all' | 'success' | 'errors' | 'slow'; before?: string }>): Promise<OperationsLogsPage> => {
     const params = new URLSearchParams({ search: query.search, level: query.level, limit: '50' })
+    if (query.outcome) params.set('outcome', query.outcome)
     if (query.before) params.set('before', query.before)
     const response = await fetch(`${apiBaseUrl}/operations/logs?${params}`, { credentials: 'include', cache: 'no-store' })
     if (!response.ok) throw new Error(response.status === 401 ? 'Sign in with an owner account to view logs.' : response.status === 403 ? 'Log access is limited to workspace owners.' : `Logs could not be loaded (${response.status}).`)

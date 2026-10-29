@@ -32,6 +32,7 @@ const canViewOperations = (identity: AuthIdentity | undefined, response: JsonRes
 const parseLogQuery = (query: Request['query']) => z.object({
     search: z.string().trim().max(120).default(''),
     level: z.enum(['all', 'info', 'warn', 'error']).default('all'),
+    outcome: z.enum(['all', 'success', 'errors', 'slow']).default('all'),
     before: z.iso.datetime().optional(),
     limit: z.coerce.number().int().min(1).max(100).default(50)
 }).parse(query)

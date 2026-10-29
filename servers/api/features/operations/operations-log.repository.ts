@@ -17,7 +17,7 @@ export type OperationsLogEntry = Readonly<{
 }>
 
 type StoredOperationsLog = OperationsLogEntry & Readonly<{ expiresAt: Date; searchText: string }>
-type LogQuery = Readonly<{ teamId: string; search: string; level: 'all' | 'info' | 'warn' | 'error'; before?: Date; limit: number }>
+type LogQuery = Readonly<{ teamId: string; search: string; level: 'all' | 'info' | 'warn' | 'error'; outcome?: 'all' | 'success' | 'errors' | 'slow'; before?: Date; limit: number }>
 
 const { model, models, Schema } = mongoose
 const schema = new Schema<StoredOperationsLog>(
@@ -52,17 +52,20 @@ export const createOperationsLogRepository = (logger?: Logger) => Object.freeze(
         if (mongoose.connection.readyState !== mongoose.ConnectionStates.connected) return
         const createdAt = entry.createdAt
         try {
-            const searchText = [entry.message, entry.method, entry.route, entry.requestId, entry.traceId, entry.userId].filter(Boolean).join(' ')
+            const searchText = [entry.message, entry.method, entry.route, entry.requestId, entry.traceId, entry.spanId, entry.userId].filter(Boolean).join(' ')
             await OperationsLogModel.create({ ...entry, searchText, expiresAt: new Date(createdAt.getTime() + 14 * 24 * 60 * 60 * 1_000) })
         } catch (cause) {
             // Logging must never fail or delay the user request.
             logger?.warn('Central request log could not be persisted.', { errorType: cause instanceof Error ? cause.name : 'UnknownPersistenceError' })
         }
     },
-    search: async ({ teamId, search, level, before, limit }: LogQuery) => {
+    search: async ({ teamId, search, level, outcome = 'all', before, limit }: LogQuery) => {
         if (mongoose.connection.readyState !== mongoose.ConnectionStates.connected) return { logs: [], nextBefore: null }
         let recordsQuery = OperationsLogModel.find().where('teamId', teamId)
         if (level !== 'all') recordsQuery = recordsQuery.where('level', level)
+        if (outcome === 'success') recordsQuery = recordsQuery.where('statusCode').gte(200).lt(300)
+        if (outcome === 'errors') recordsQuery = recordsQuery.where('statusCode').gte(400)
+        if (outcome === 'slow') recordsQuery = recordsQuery.where('durationMs').gt(250)
         if (before) recordsQuery = recordsQuery.where('createdAt').lt(before.getTime())
         if (search) recordsQuery = recordsQuery.where('searchText').regex(new RegExp(escapeRegex(search), 'i'))
         const records = await recordsQuery.sort({ createdAt: -1, _id: -1 }).limit(limit + 1).lean().exec()

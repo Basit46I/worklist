@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Activity, AlertTriangle, ArrowLeft, Clock3, Cpu, Database, RefreshCw, Server } from 'lucide-react'
 import { fetchOperationsSnapshot, type OperationsSnapshot } from '../operations-api'
 import { OperationsLogViewer } from './operations-log-viewer'
+import { OperationsTraceViewer } from './operations-trace-viewer'
 
 const panel = 'rounded-2xl border border-[#e3e9e2] bg-white shadow-[0_12px_32px_-28px_rgba(23,33,28,.4)]'
 const formatBytes = (bytes: number): string => `${(bytes / 1024 / 1024).toFixed(1)} MB`
@@ -75,6 +76,7 @@ export const OperationsDashboard = (): ReactElement => {
                         <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-[#fafbf9] text-[10px] uppercase tracking-wide text-[#78877c]"><tr><th className="px-5 py-3 font-semibold">Route</th><th className="px-4 py-3 font-semibold">Method</th><th className="px-4 py-3 text-right font-semibold">Requests</th><th className="px-4 py-3 text-right font-semibold">Errors</th><th className="px-4 py-3 text-right font-semibold">Error rate</th><th className="px-4 py-3 text-right font-semibold">Avg.</th><th className="px-5 py-3 text-right font-semibold">P95</th></tr></thead><tbody className="divide-y divide-[#edf0ec]">{snapshot.metrics.requests.routes.length ? snapshot.metrics.requests.routes.map((route) => <tr key={`${route.method}:${route.route}`}><td className="px-5 py-3 font-mono text-[#34483a]">{route.route}</td><td className="px-4 py-3 text-[#6f7e73]">{route.method}</td><td className="px-4 py-3 text-right tabular-nums">{route.requests.toLocaleString()}</td><td className={`px-4 py-3 text-right tabular-nums ${route.errors ? 'font-semibold text-rose-700' : 'text-[#6f7e73]'}`}>{route.errors}</td><td className={`px-4 py-3 text-right tabular-nums ${route.errorRatePercent >= 5 ? 'font-semibold text-rose-700' : 'text-[#6f7e73]'}`}>{route.errorRatePercent}%</td><td className="px-4 py-3 text-right tabular-nums">{route.averageLatencyMs} ms</td><td className="px-5 py-3 text-right tabular-nums">{route.p95LatencyMs} ms</td></tr>) : <tr><td className="px-5 py-8 text-center text-[#89948b]" colSpan={7}>{loading ? 'Loading API activity…' : 'No completed requests captured yet.'}</td></tr>}</tbody></table></div>
                     </section>
 
+                    <OperationsTraceViewer />
                     <OperationsLogViewer />
 
                     <p className="mt-4 rounded-xl border border-[#e4e9e2] bg-[#eef2ec] px-4 py-3 text-[11px] leading-5 text-[#64736a]">These metrics describe the <strong className="font-semibold text-[#40564a]">current function instance</strong>. Vercel may serve requests through multiple instances, so this page is not a fleet-wide total. Prometheus scraping is available at <code className="rounded bg-white px-1.5 py-0.5">/api/metrics</code> when a bearer token is configured. Last refreshed {new Date(snapshot.metrics.generatedAt).toLocaleTimeString()}.</p>
