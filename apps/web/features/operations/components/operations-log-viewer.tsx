@@ -10,6 +10,7 @@ export const OperationsLogViewer = (): ReactElement => {
     const [search, setSearch] = useState('')
     const [level, setLevel] = useState<Level>('all')
     const [page, setPage] = useState<OperationsLogsPage>({ logs: [], nextBefore: null })
+    const [expandedId, setExpandedId] = useState<string | null>(null)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
@@ -53,13 +54,30 @@ export const OperationsLogViewer = (): ReactElement => {
         </div>
         {error && <p className="m-4 rounded-lg bg-rose-50 p-3 text-xs text-rose-800" role="alert">{error}</p>}
         <div className="divide-y divide-[#edf0ec]">
-            {page.logs.map((log) => <article className="grid gap-2 px-4 py-3 text-xs sm:grid-cols-[145px_65px_1fr] sm:px-5" key={log.id}>
-                <time className="text-[#77867b]" dateTime={log.createdAt}>{new Date(log.createdAt).toLocaleString()}</time>
-                <span className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${log.level === 'error' ? 'bg-rose-50 text-rose-800' : log.level === 'warn' ? 'bg-amber-50 text-amber-800' : 'bg-[#edf5ed] text-[#387451]'}`}>{log.level}</span>
-                <div className="min-w-0"><p className="font-medium text-[#3c5043]">{log.method} {log.route} · {log.statusCode} · {log.durationMs} ms</p>{log.errorMessage && <p className="mt-1 text-[#8a5520]">{log.errorCode ? `${log.errorCode}: ` : ''}{log.errorMessage}</p>}<p className="mt-1 break-all font-mono text-[10px] text-[#718076]">Request {log.requestId}{log.traceId ? ` · Trace ${log.traceId}` : ''}{log.userId ? ` · User ${log.userId}` : ''}</p></div>
-            </article>)}
+            {page.logs.map((log) => {
+                const expanded = expandedId === log.id
+                return <article className="px-4 py-3 text-xs sm:px-5" key={log.id}>
+                    <button aria-controls={`operations-log-details-${log.id}`} aria-expanded={expanded} className="grid w-full gap-2 text-left outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-[#668356] sm:grid-cols-[145px_65px_1fr]" onClick={() => setExpandedId((current) => current === log.id ? null : log.id)} type="button">
+                        <time className="text-[#77867b]" dateTime={log.createdAt}>{new Date(log.createdAt).toLocaleString()}</time>
+                        <span className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${log.level === 'error' ? 'bg-rose-50 text-rose-800' : log.level === 'warn' ? 'bg-amber-50 text-amber-800' : 'bg-[#edf5ed] text-[#387451]'}`}>{log.level}</span>
+                        <div className="min-w-0"><p className="font-medium text-[#3c5043]">{log.method} {log.route} · {log.statusCode} · {log.durationMs} ms <span className="ml-1 text-[#87948a]">{expanded ? '− Hide details' : '+ Open details'}</span></p><p className="mt-1 break-all font-mono text-[10px] text-[#718076]">Request {log.requestId}{log.traceId ? ` · Trace ${log.traceId}` : ''}{log.userId ? ` · User ${log.userId}` : ''}</p></div>
+                    </button>
+                    {expanded && <div className="mt-3 grid gap-3 rounded-xl bg-[#f7f9f6] p-3 text-xs sm:grid-cols-2" id={`operations-log-details-${log.id}`}>
+                        <LogDetail label="Request ID" value={log.requestId} />
+                        <LogDetail label="Trace ID" value={log.traceId ?? 'Not available for this request'} />
+                        <LogDetail label="Span ID" value={log.spanId ?? 'Not available for this request'} />
+                        <LogDetail label="User ID" value={log.userId ?? 'Anonymous request'} />
+                        {log.errorCode && <LogDetail label="Error code" value={log.errorCode} />}
+                        {log.errorMessage
+                            ? <div className="sm:col-span-2"><LogDetail label="Why this request failed" value={log.errorMessage} /></div>
+                            : log.statusCode >= 400 && <p className="sm:col-span-2 text-[#8a5520]">No error reason was captured for this request. New requests will include the safe API error message here.</p>}
+                    </div>}
+                </article>
+            })}
             {!page.logs.length && <p className="px-5 py-8 text-center text-xs text-[#89948b]">{loading ? 'Searching logs…' : 'No matching logs. New requests appear here when the database is connected.'}</p>}
         </div>
         {page.nextBefore && <div className="border-t border-[#edf0ec] p-3 text-center"><button className="rounded-lg border border-[#dfe6dd] px-3 py-2 text-xs font-medium text-[#53645a] hover:bg-[#f8faf7] disabled:opacity-50" disabled={refreshing} onClick={() => void loadMore()} type="button">Load older logs</button></div>}
     </section>
 }
+
+const LogDetail = ({ label, value }: Readonly<{ label: string; value: string }>): ReactElement => <div className="min-w-0"><span className="block text-[10px] uppercase tracking-wide text-[#87948a]">{label}</span><code className="mt-1 block break-all text-[#40564a]">{value}</code></div>
