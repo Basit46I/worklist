@@ -4,7 +4,7 @@ import type { CreateWorkItemInput, UpdateWorkItemInput } from './work-item.valid
 import { mapWithConcurrency, serialize, type BulkDeleteOutcome, type BulkUpdateOutcome } from './work-item.repository.shared.js'
 
 export const createWorkItemMutationRepository = () => Object.freeze({
-        create: async (teamId: string, userId: string, input: CreateWorkItemInput) => {
+        create: async (teamId: string, userId: string, input: CreateWorkItemInput & Readonly<{ assigneeEmail?: string }>) => {
             const { listId, parentId, ...values } = input
             const record = await WorkItemModel.create({
                 ...values,
@@ -17,7 +17,7 @@ export const createWorkItemMutationRepository = () => Object.freeze({
             })
             return serialize(record)
         },
-        update: async (teamId: string, itemId: string, changes: UpdateWorkItemInput, expectedUpdatedAt?: Date) => {
+        update: async (teamId: string, itemId: string, changes: UpdateWorkItemInput & Readonly<{ assigneeEmail?: string }>, expectedUpdatedAt?: Date) => {
             if (!mongoose.Types.ObjectId.isValid(itemId)) return null
             const { dependsOn, ...fields } = changes
             const update = { ...fields, ...(dependsOn !== undefined ? { dependsOn: dependsOn.map((id) => new mongoose.Types.ObjectId(id)) } : {}) }
@@ -41,7 +41,7 @@ export const createWorkItemMutationRepository = () => Object.freeze({
             if (!source) return null
             const record = await WorkItemModel.create({
                 teamId, ...(source.listId ? { listId: source.listId } : {}), title: `${source.title} (copy)`, description: source.description,
-                status: source.status, priority: source.priority, assignee: source.assignee, startDate: source.startDate ?? source.dueDate, dueDate: source.dueDate,
+                status: source.status, priority: source.priority, assignee: source.assignee, assigneeEmail: source.assigneeEmail ?? '', startDate: source.startDate ?? source.dueDate, dueDate: source.dueDate,
                 checklist: (source.checklist ?? []).map((entry) => ({ ...entry, completed: false })),
                 dependsOn: [], recurrence: null, tags: source.tags ?? [], createdBy: userId
             })
@@ -78,6 +78,7 @@ export const createWorkItemMutationRepository = () => Object.freeze({
                 status?: string | undefined
                 priority?: string | undefined
                 assignee?: string | undefined
+                assigneeEmail?: string | undefined
                 dueDate?: Date | undefined
             }>
         ) => {

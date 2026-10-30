@@ -16,7 +16,7 @@ export const DashboardPage = (): ReactElement => {
 
     return (
         <ApplicationShell activeRoute="dashboard" onSignOut={logout} signOutBusy={signOutBusy} user={user}>
-            <div className="mx-auto max-w-[1560px] px-5 pb-10 pt-7 sm:px-8 sm:pt-8">
+            <div className="dashboard-page mx-auto max-w-[1560px] px-5 pb-10 pt-7 sm:px-8 sm:pt-8">
                 <DashboardIntro
                     lists={lists}
                     onScopeChange={setScope}
@@ -43,7 +43,7 @@ const DashboardIntro = ({ lists, onScopeChange, myTasksOnly, onMyTasksChange, sc
     scope: string
     user: NonNullable<ReturnType<typeof useDashboardData>['user']>
 }>): ReactElement => (
-    <header className="mb-6 flex flex-col justify-between gap-5 rounded-2xl border border-[#e7e9e5] bg-white px-5 py-5 shadow-[0_12px_32px_-28px_rgba(23,33,28,.4)] sm:flex-row sm:items-end sm:px-6">
+    <header className="dashboard-page-heading mb-6 flex flex-col justify-between gap-5 rounded-2xl border border-[#e7e9e5] bg-white px-5 py-5 shadow-[0_12px_32px_-28px_rgba(23,33,28,.4)] sm:flex-row sm:items-end sm:px-6">
         <div className="min-w-0"><p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#527c5d]">{new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date())} <span className="px-1 text-[#b8beb8]">/</span> {user.teamName}</p><h1 className="mt-2 text-2xl font-semibold tracking-[-.035em] text-[#26352d] sm:text-3xl">Workspace overview</h1><p className="mt-1 text-sm text-[#7b867e]">A clear read on your team’s workload and deadlines.</p></div>
         <div className="flex flex-wrap items-center gap-2">
             <label className="flex h-10 items-center gap-2 rounded-xl border border-[#e5e9e3] bg-[#fafbf9] px-3 text-[11px] text-[#7f8a82]">List<select aria-label="Dashboard scope" className="max-w-40 bg-transparent text-xs font-semibold text-[#354239] outline-none" onChange={(event) => onScopeChange(event.target.value)} value={scope}><option value="all">All lists</option>{lists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}</select></label>

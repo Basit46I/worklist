@@ -1,3 +1,4 @@
+import { createWorkItemAssignmentService } from '../work-item-assignment.service.js'
 import { createAuthGuard, createAuthRepository, createAuthService, createOriginGuard } from '../../auth/public.js'
 import { createWorkItemRepository } from '../work-item.repository.js'
 import { createSavedViewRepository } from '../saved-view.repository.js'
@@ -27,7 +28,9 @@ export const createWorkItemController = (webOrigins: readonly string[], isPersis
     const templates = createWorklistTemplateRepository()
     const hierarchy = createWorklistHierarchyRepository()
     const verifyOrigin = createOriginGuard(webOrigins)
-    const context: WorkItemControllerContext = { repository, lists, savedViews, comments, activities, templates, events }
+    const accounts = createAuthRepository()
+    const assignments = createWorkItemAssignmentService({ accounts, invitations: createAuthService({ repository: accounts, isPersistenceAvailable, ...options }), ...options })
+    const context: WorkItemControllerContext = { assignments, repository, lists, savedViews, comments, activities, templates, events }
     return Object.freeze({
         guard,
         verifyOrigin,

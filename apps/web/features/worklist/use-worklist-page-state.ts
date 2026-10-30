@@ -68,9 +68,9 @@ export const useWorklistPageState = () => {
     const [sortField, setSortField] = useState<WorkItemSortField>('dueDate')
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
     const [groupBy, setGroupBy] = useState<WorkItemColumn | 'Off'>('status')
-    const [visibleColumns, setVisibleColumns] = useState<readonly WorkItemColumn[]>(['status', 'priority', 'assignee', 'dueDate'])
-    const [columnWidths, setColumnWidths] = useState<WorkItemColumnWidths>(defaultWorkItemColumnWidths)
-    const [showColumnPicker, setShowColumnPicker] = useState(true)
+    const [visibleColumns, setVisibleColumns] = useState<readonly WorkItemColumn[]>(['dueDate', 'assignee', 'priority'])
+    const [columnWidths, setColumnWidths] = useState<WorkItemColumnWidths>({ ...defaultWorkItemColumnWidths, dueDate: 150, assignee: 170, priority: 100 })
+    const [showColumnPicker, setShowColumnPicker] = useState(false)
     const [showNewItem, setShowNewItem] = useState(false)
     const [showTemplatePicker, setShowTemplatePicker] = useState(false)
     const [templates, setTemplates] = useState<readonly WorklistTemplate[]>([])
@@ -90,7 +90,7 @@ export const useWorklistPageState = () => {
     const [newDescription, setNewDescription] = useState('')
     const [newStatus, setNewStatus] = useState<WorkItemStatus>('To do')
     const [newPriority, setNewPriority] = useState<WorkItemPriority>('Medium')
-    const [newAssignee, setNewAssignee] = useState('Unassigned')
+    const [newAssignee, setNewAssignee] = useState('')
     const [newDueDate, setNewDueDate] = useState(dateInOneWeek)
 
     return {

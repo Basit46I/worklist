@@ -3,7 +3,7 @@ import { ERROR_CODES, ERROR_MESSAGES, HTTP_STATUS } from '../../constants/index.
 import { createSessionToken, digestSessionToken, hashPassword, verifyPassword } from './auth.credentials.js'
 import type { AuthIdentity, AuthRepository, AuthService } from './auth.types.js'
 import type { AuthTeamMember } from './auth.types.js'
-import type { EmailSender } from '../../integrations/index.js'
+import { renderWorklistEmail, type EmailSender } from '../../integrations/index.js'
 
 const sessionLifetimeMs = 7 * 24 * 60 * 60 * 1000
 
@@ -91,7 +91,7 @@ export const createAuthService = ({
             to: input.email,
             subject: input.subject,
             text: `${input.description}\n\nOpen this link to continue: ${link.toString()}\n\nIf you did not request this, ignore this email.`,
-            html: `<p>${input.description.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</p><p><a href="${link.toString().replaceAll('&', '&amp;').replaceAll('"', '&quot;')}">Continue</a></p><p>If you did not request this, ignore this email.</p>`
+            html: renderWorklistEmail({ title: input.kind === 'team-invitation' ? 'Great work starts together.' : input.kind === 'password-reset' ? 'A fresh start for your password.' : 'Welcome to Worklist.', description: input.description, actionLabel: input.kind === 'team-invitation' ? 'Accept invitation' : input.kind === 'password-reset' ? 'Reset password' : 'Verify email', actionUrl: link.toString(), eyebrow: input.kind === 'team-invitation' ? 'YOU’RE INVITED' : 'YOUR ACCOUNT', footer: `This link expires in ${input.kind === 'team-invitation' ? '7 days' : '24 hours'}. If you did not expect this email, you can safely ignore it.` })
         })
     }
 
@@ -173,7 +173,7 @@ export const createAuthService = ({
                     description: 'Verify your email address to activate your Worklist account.'
                 })
         },
-        inviteMember: async (owner, email, role) => {
+        inviteMember: async (owner, email, role, taskTitle) => {
             if (!isPersistenceAvailable()) throw unavailableError()
             if (owner.role !== 'owner')
                 throw createApplicationError({ code: ERROR_CODES.forbidden, message: ERROR_MESSAGES.forbidden, status: HTTP_STATUS.forbidden })
@@ -193,7 +193,7 @@ export const createAuthService = ({
                 kind: 'team-invitation',
                 path: '/accept-invitation',
                 subject: `Invitation to join ${owner.teamName}`,
-                description: `You have been invited to join ${owner.teamName} as a ${role}.`,
+                description: `You have been invited to join ${owner.teamName} as a ${role}.${taskTitle ? ` A task is waiting for you: “${taskTitle}”.` : ''}`,
                 teamId: owner.teamId,
                 role
             })

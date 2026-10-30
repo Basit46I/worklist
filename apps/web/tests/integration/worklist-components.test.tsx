@@ -24,6 +24,8 @@ void test('calendar shows duration bars inside the month grid with resize handle
 
     assert.match(markup, /aria-label="calendar task timeline"/)
     assert.match(markup, /aria-label="Month calendar"/)
+    assert.match(markup, /data-calendar-date="2026-10-05"/)
+    assert.match(markup, /data-calendar-week="2026-10-05"/)
     assert.match(markup, /aria-label="Ship onboarding timeline bar"/)
     assert.match(markup, /Ship onboarding/)
     assert.match(markup, /6d/)
@@ -34,7 +36,7 @@ void test('calendar shows duration bars inside the month grid with resize handle
     assert.doesNotMatch(markup, /Timeline start date/)
 })
 
-void test('archived task rows show Restore while active task rows show Archive', () => {
+void test('archived task rows expose Restore while active task actions use a menu', () => {
     const renderRow = (archivedAt: string | null): string => renderToStaticMarkup(<table><tbody><WorkItemRow
         activityClient={{ list: async () => [] }}
         approvalClient={{ request: async () => {} }}
@@ -64,7 +66,8 @@ void test('archived task rows show Restore while active task rows show Archive',
     const activeMarkup = renderRow(null)
     const archivedMarkup = renderRow('2026-10-22T00:00:00.000Z')
 
-    assert.match(activeMarkup, /aria-label="Archive Ship onboarding"/)
+    assert.match(activeMarkup, /aria-label="Actions for Ship onboarding"/)
+    assert.match(activeMarkup, /aria-haspopup="menu"/)
     assert.doesNotMatch(activeMarkup, /Restore Ship onboarding/)
     assert.match(archivedMarkup, /aria-label="Restore Ship onboarding"/)
     assert.match(archivedMarkup, />Restore</)

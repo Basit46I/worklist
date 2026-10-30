@@ -9,6 +9,12 @@ import { OperationsLogViewer } from './operations-log-viewer'
 import { OperationsTraceViewer } from './operations-trace-viewer'
 
 const panel = 'rounded-2xl border border-[#e2e8e1] bg-white shadow-[0_14px_40px_-32px_rgba(27,48,36,.4)]'
+const sections = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'api-performance', label: 'API performance' },
+    { id: 'request-traces', label: 'Traceability' },
+    { id: 'central-logs', label: 'Logs' }
+] as const
 const formatBytes = (bytes: number): string => `${(bytes / 1024 / 1024).toFixed(1)} MB`
 const formatUptime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
@@ -22,6 +28,7 @@ export const OperationsDashboard = (): ReactElement => {
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
+    const [activeSection, setActiveSection] = useState<(typeof sections)[number]['id']>('overview')
 
     const refresh = useCallback(async () => {
         setRefreshing(true)
@@ -42,27 +49,36 @@ export const OperationsDashboard = (): ReactElement => {
         return () => { window.clearTimeout(initialRefresh); window.clearInterval(timer) }
     }, [refresh])
 
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            const visible = entries.filter((entry) => entry.isIntersecting).sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0]
+            if (visible?.target.id) setActiveSection(visible.target.id as (typeof sections)[number]['id'])
+        }, { rootMargin: '-18% 0px -68% 0px', threshold: [0, 0.15, 0.4, 0.7] })
+        sections.forEach(({ id }) => {
+            const target = document.getElementById(id)
+            if (target) observer.observe(target)
+        })
+        return () => observer.disconnect()
+    }, [])
+
     return (
         <main className="min-h-screen bg-[#f3f6f2] px-4 py-5 text-[#263b31] sm:px-7 sm:py-7 xl:px-10">
             <div className="mx-auto max-w-[1440px]">
-                <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+                <header className="sticky top-0 z-40 -mx-4 -mt-5 mb-7 flex flex-wrap items-center justify-between gap-4 border-b border-[#e2e8e1]/90 bg-[#f3f6f2]/95 px-4 pb-4 pt-5 backdrop-blur-md sm:-mx-7 sm:-mt-7 sm:px-7 sm:pt-6 xl:-mx-10 xl:px-10">
                     <div className="flex items-center gap-3">
                         <span className="grid size-10 place-items-center rounded-xl bg-[#174638] text-white shadow-sm"><Activity aria-hidden="true" className="size-5" /></span>
                         <div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#668071]">Worklist <span className="px-1 text-[#bac5bb]">/</span> Operations</p><p className="mt-0.5 text-sm font-semibold tracking-tight">Observability</p></div>
                     </div>
                     <div className="flex items-center gap-2">
                         <nav aria-label="Operations sections" className="mr-2 hidden items-center gap-1 rounded-xl border border-[#e2e8e1] bg-white p-1 md:flex">
-                            <a className="rounded-lg bg-[#edf4ec] px-3 py-2 text-xs font-semibold text-[#315e40]" href="#overview">Overview</a>
-                            <a className="rounded-lg px-3 py-2 text-xs font-medium text-[#738077] transition hover:bg-[#f5f8f4] hover:text-[#315e40]" href="#api-performance">API performance</a>
-                            <a className="rounded-lg px-3 py-2 text-xs font-medium text-[#738077] transition hover:bg-[#f5f8f4] hover:text-[#315e40]" href="#request-traces">Traceability</a>
-                            <a className="rounded-lg px-3 py-2 text-xs font-medium text-[#738077] transition hover:bg-[#f5f8f4] hover:text-[#315e40]" href="#central-logs">Logs</a>
+                            {sections.map(({ id, label }) => <a aria-current={activeSection === id ? 'location' : undefined} className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${activeSection === id ? 'bg-[#edf4ec] font-semibold text-[#315e40]' : 'text-[#738077] hover:bg-[#f5f8f4] hover:text-[#315e40]'}`} href={`#${id}`} key={id} onClick={() => setActiveSection(id)}>{label}</a>)}
                         </nav>
                         <Link className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#dfe6dd] bg-white px-3 text-xs font-medium text-[#53645a] transition hover:bg-[#f8faf7]" href="/dashboard"><ArrowLeft aria-hidden="true" className="size-4" />Workspace</Link>
                         <button aria-label="Refresh metrics" className="grid size-10 place-items-center rounded-xl border border-[#dfe6dd] bg-white text-[#53645a] transition hover:bg-[#f8faf7] disabled:opacity-60" disabled={refreshing} onClick={() => void refresh()} type="button"><RefreshCw aria-hidden="true" className={`size-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
                     </div>
                 </header>
 
-                <section className="mb-6 flex flex-wrap items-end justify-between gap-4" id="overview">
+                <section className="mb-6 flex scroll-mt-32 flex-wrap items-end justify-between gap-4" id="overview">
                     <div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#6e8b73]">Operations center</p><h1 className="mt-1 text-3xl font-semibold tracking-[-.04em] text-[#1d3328] sm:text-[34px]">Service overview</h1><p className="mt-2 max-w-2xl text-sm text-[#78867b]">See API traffic, performance, errors and request details in one place.</p></div>
                     {snapshot && <span className="inline-flex items-center gap-2 rounded-full border border-[#dce7dc] bg-white px-3 py-2 text-[11px] font-medium text-[#637568]"><span className="size-2 rounded-full bg-[#5a9a68]" />Updated {new Date(snapshot.metrics.generatedAt).toLocaleTimeString()}</span>}
                 </section>
@@ -85,7 +101,7 @@ export const OperationsDashboard = (): ReactElement => {
                     </section>
 
                     <div className="mb-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1.8fr)_minmax(280px,.8fr)]">
-                        <section aria-label="API route performance" className={`${panel} overflow-hidden`} id="api-performance">
+                        <section aria-label="API route performance" className={`${panel} scroll-mt-32 overflow-hidden`} id="api-performance">
                             <SectionHeading eyebrow="Performance" title="Endpoint performance" description="Request volume, errors and response time by route." aside={`Uptime ${formatUptime(snapshot.metrics.uptimeSeconds)}`} />
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[760px] text-left text-xs">
@@ -111,8 +127,8 @@ export const OperationsDashboard = (): ReactElement => {
                         </section>
                     </div>
 
-                    <div id="request-traces"><OperationsTraceViewer /></div>
-                    <div id="central-logs"><OperationsLogViewer /></div>
+                    <div className="scroll-mt-32" id="request-traces"><OperationsTraceViewer /></div>
+                    <div className="scroll-mt-32" id="central-logs"><OperationsLogViewer /></div>
                     <p className="mt-5 rounded-xl border border-[#e1e8df] bg-[#edf2eb] px-4 py-3 text-[11px] leading-5 text-[#64736a]">This view reports the <strong className="font-semibold text-[#40564a]">current function instance</strong>; Vercel may route requests across multiple instances. Prometheus metrics are available at <code className="rounded bg-white px-1.5 py-0.5">/api/metrics</code> when bearer authentication is configured. Last refreshed {new Date(snapshot.metrics.generatedAt).toLocaleTimeString()}.</p>
                 </>}
                 {!snapshot && loading && <div className={`${panel} grid min-h-64 place-items-center text-sm text-[#77867b]`}><span className="flex items-center gap-3"><span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-[#dce5d6] border-t-[#668356]" />Loading protected service metrics…</span></div>}

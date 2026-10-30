@@ -73,6 +73,8 @@ export type BulkDeleteResult = Readonly<{
     results: readonly Readonly<{ itemId: string; outcome: 'deleted' | 'not_found' | 'failed' }>[]
 }>
 export type BulkUpdateResult = Readonly<{
+    assignment?: Readonly<{ assignee: string; assigneeEmail: string; assigneePending: boolean }>
+    assignmentNotice?: string
     appliedCount: number
     results: readonly Readonly<{ itemId: string; outcome: 'applied' | 'not_found' | 'failed' }>[]
 }>

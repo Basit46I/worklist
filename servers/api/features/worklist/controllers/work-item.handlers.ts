@@ -5,7 +5,7 @@ import { bulkDeleteWorkItemsSchema, bulkUpdateWorkItemsSchema, createWorkItemSch
 import { getItemId, missingItem, requireIdentity, requireItemEditor } from './work-item.controller-support.js'
 import type { WorkItemControllerContext } from './work-item.controller-context.js'
 
-export const createWorkItemHandlers = ({ repository, lists, comments, activities, events }: WorkItemControllerContext) => Object.freeze({
+export const createWorkItemHandlers = ({ repository, lists, comments, activities, events, assignments }: WorkItemControllerContext) => Object.freeze({
         handleGetWorkItems: async (request: Request, response: Response) => {
             response.setHeader('Cache-Control', 'no-store')
             const parsedQuery = workItemListQuerySchema.parse(request.query)
@@ -21,7 +21,8 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
                     status: HTTP_STATUS.badRequest
                 })
             const query = { ...parsedQuery, listId }
-            response.json(await repository.list(identity.teamId, query))
+            const page = await repository.list(identity.teamId, query)
+            response.json({ ...page, items: await assignments.hydrate(identity.teamId, page.items) })
         },
         handlePostWorkItemsItemIdArchive: async (request: Request, response: Response) => {
             const identity = requireItemEditor(request)
@@ -70,11 +71,13 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
                 })
             if (input.parentId && !(await repository.canUseAsParent(identity.teamId, listId, input.parentId))) throw missingItem()
             if (!(await repository.canUseDependencies(identity.teamId, listId, undefined, input.dependsOn))) throw missingItem()
-            const item = await repository.create(identity.teamId, identity.id, { ...input, listId })
+            const assignment = await assignments.resolve(identity, input.assignee)
+            const item = await repository.create(identity.teamId, identity.id, { ...input, listId, assignee: assignment.assignee, assigneeEmail: assignment.assigneeEmail })
+            const assignmentNotice = await assignments.notify(identity, assignment, item)
             await activities.add(identity.teamId, item.id, identity.id, identity.name, 'created', 'Created this task.')
             events.publish(identity.teamId, { type: 'activity', itemId: item.id })
             events.publish(identity.teamId)
-            response.status(HTTP_STATUS.created).json({ item })
+            response.status(HTTP_STATUS.created).json({ item: { ...item, assigneePending: assignment.assigneePending, assignmentNotice } })
         },
         handleDeleteWorkItems: async (request: Request, response: Response) => {
             const { itemIds } = bulkDeleteWorkItemsSchema.parse(request.body)
@@ -113,7 +116,8 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
                         })
                 }
             }
-            const results = await repository.updateMany(identity.teamId, itemIds, changes)
+            const assignment = changes.assignee !== undefined ? await assignments.resolve(identity, changes.assignee) : undefined
+            const results = await repository.updateMany(identity.teamId, itemIds, { ...changes, ...(assignment ? { assignee: assignment.assignee, assigneeEmail: assignment.assigneeEmail } : {}) })
             const appliedCount = results.filter((result) => result.outcome === 'applied').length
             const changedFields = Object.keys(changes).join(', ')
             await Promise.all(results.filter((result) => result.outcome === 'applied').map(async ({ itemId }) => {
@@ -122,7 +126,8 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
             if (appliedCount > 0) events.publish(identity.teamId, { type: 'activity' })
             if (appliedCount > 0) events.publish(identity.teamId)
             const status = results.every((result) => result.outcome === 'applied') ? HTTP_STATUS.ok : HTTP_STATUS.multiStatus
-            response.status(status).json({ appliedCount, results })
+            const assignmentNotice = assignment && appliedCount > 0 ? await assignments.notify(identity, assignment, { id: '', title: `${String(appliedCount)} assigned tasks`, dueDate: 'See your task list', priority: 'See your task list' }) : undefined
+            response.status(status).json({ appliedCount, results, ...(assignment ? { assignment } : {}), ...(assignmentNotice ? { assignmentNotice } : {}) })
         },
 
         handlePatchWorkItemsItemId: async (request: Request, response: Response) => {
@@ -167,7 +172,8 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
                     message: 'Complete this task’s dependencies before marking it done.',
                     status: HTTP_STATUS.conflict
                 })
-            const item = await repository.update(identity.teamId, getItemId(request), changes, expectedUpdatedAt ? new Date(expectedUpdatedAt) : undefined)
+            const assignment = changes.assignee !== undefined ? await assignments.resolve(identity, changes.assignee) : undefined
+            const item = await repository.update(identity.teamId, getItemId(request), { ...changes, ...(assignment ? { assignee: assignment.assignee, assigneeEmail: assignment.assigneeEmail } : {}) }, expectedUpdatedAt ? new Date(expectedUpdatedAt) : undefined)
             if (!item) {
                 if (expectedUpdatedAt) throw createApplicationError({ code: ERROR_CODES.conflict, message: 'This task changed since you opened it. Refresh it and reapply your edit.', status: HTTP_STATUS.conflict })
                 throw missingItem()
@@ -197,7 +203,9 @@ export const createWorkItemHandlers = ({ repository, lists, comments, activities
             await activities.add(identity.teamId, item.id, identity.id, identity.name, 'updated', `Updated ${changedFields}.`)
             events.publish(identity.teamId, { type: 'activity', itemId: item.id })
             events.publish(identity.teamId)
-            response.json({ item })
+            const assignmentNotice = assignment ? await assignments.notify(identity, assignment, item) : undefined
+            const [displayItem] = await assignments.hydrate(identity.teamId, [item])
+            response.json({ item: { ...displayItem, ...(assignmentNotice ? { assignmentNotice } : {}) } })
         },
         handleDeleteWorkItemsItemId: async (request: Request, response: Response) => {
             const identity = requireItemEditor(request)

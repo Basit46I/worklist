@@ -54,8 +54,8 @@ export const WorklistResultsPanel = ({ state, data, actions, user }: WorklistRes
     return (
         <>
             <section aria-label="Project tasks" className="overflow-hidden">
-            <WorklistDataTools state={state} />
-            {viewMode === 'list' && <div className="flex justify-end border-b border-[#e8ede6] bg-[#fbfcfa] px-3 py-2">
+            {state.showFilterBuilder && <WorklistDataTools state={state} />}
+            {viewMode === 'list' && state.showFilterBuilder && <div className="flex justify-end border-b border-[#e8ede6] bg-[#fbfcfa] px-3 py-2">
                 <Button className="h-8 gap-1.5 rounded-md border-[#dce4da] bg-white px-2.5 text-xs font-medium text-[#526b58] shadow-none hover:border-[#b8cbbd] hover:bg-[#edf4ed] hover:text-[#245d43]" onClick={() => setIncludeArchivedItems((value) => !value)} variant="outline">
                     {includeArchivedItems ? <RotateCcw aria-hidden="true" className="size-3.5" /> : <Archive aria-hidden="true" className="size-3.5" />}
                     {includeArchivedItems ? 'Back to active tasks' : 'Show archived tasks'}
@@ -142,6 +142,7 @@ export const WorklistResultsPanel = ({ state, data, actions, user }: WorklistRes
                 ) : (
                     <div className="pt-1">
                         <WorklistTable
+                            onAddTask={(group) => { if (state.groupBy === 'status') setNewStatus(group); setShowNewItem(true) }}
                             canEdit={canEditWorkspace(user.role)}
                             columnWidths={columnWidths}
                             columns={visibleColumns}

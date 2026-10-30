@@ -1,7 +1,7 @@
 export { createMongoDbIntegration } from './mongodb/index.js'
 export { mongoose, Types } from './mongodb/index.js'
 export type { Model, MongoClient, MongoDbIntegration } from './mongodb/index.js'
-export { createSmtpEmailSender } from './email/index.js'
+export { createSmtpEmailSender, renderWorklistEmail } from './email/index.js'
 export type { EmailMessage, EmailSender, SmtpConfig } from './email/index.js'
 export { createRedisRateLimitStore } from './redis/index.js'
 export type { RateLimitStoreFactory, RedisRateLimitStore } from './redis/index.js'

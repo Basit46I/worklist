@@ -32,6 +32,7 @@ export const serialize = (item: {
     status: string
     priority: string
     assignee: string
+    assigneeEmail?: string
     startDate?: Date
     dueDate: Date
     checklist?: readonly Readonly<{ id: string; text: string; completed: boolean }>[]
@@ -53,6 +54,7 @@ export const serialize = (item: {
     status: item.status,
     priority: item.priority,
     assignee: item.assignee,
+    assigneeEmail: item.assigneeEmail ?? '',
     startDate: (item.startDate ?? item.dueDate).toISOString().slice(0, 10),
     dueDate: item.dueDate.toISOString().slice(0, 10),
     checklist: item.checklist ?? [],

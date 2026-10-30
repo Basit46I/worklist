@@ -1,6 +1,6 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import type { Request, RequestHandler, Response } from 'express'
-import type { EmailSender } from '../../../integrations/index.js'
+import { renderWorklistEmail, type EmailSender } from '../../../integrations/index.js'
 import { ERROR_CODES, HTTP_STATUS } from '../../../constants/index.js'
 import { createApplicationError } from '../../../errors/index.js'
 import { clientApprovalDecisionSchema } from '../client-approval.validation.js'
@@ -11,7 +11,6 @@ import type { WorkItemEventHub } from '../work-item.events.js'
 import { getItemId, requireItemEditor } from './work-item.controller-support.js'
 
 const getToken = (request: Request): string => Array.isArray(request.params.token) ? request.params.token[0] ?? '' : request.params.token ?? ''
-const html = (value: string): string => value.replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character] ?? character)
 const unavailable = (): Error => createApplicationError({ code: ERROR_CODES.unavailable, message: 'Email delivery is not configured for this workspace.', status: HTTP_STATUS.serviceUnavailable })
 const invalidLink = (): Error => createApplicationError({ code: ERROR_CODES.routeNotFound, message: 'This approval link is invalid, expired, or already used.', status: HTTP_STATUS.notFound })
 
@@ -29,7 +28,7 @@ export const createClientApprovalHandlers = ({ emailSender, webOrigin, cronSecre
             if (!item) throw invalidLink()
             const url = new URL(`/client-approval/${token}`, webOrigin).toString()
             try {
-                await emailSender.send({ to: item.email, subject: `Approval requested: ${item.title}`, text: `${item.contactName},\n\nPlease review “${item.title}” and respond here: ${url}\n\nThis link expires in 7 days.`, html: `<p>${html(item.contactName)},</p><p>Please review <strong>${html(item.title)}</strong> and respond using the secure link below.</p><p><a href="${html(url)}">Review and respond</a></p><p>This link expires in 7 days.</p>` })
+                await emailSender.send({ to: item.email, subject: `Approval requested: ${item.title}`, text: `${item.contactName},\n\nPlease review “${item.title}” and respond here: ${url}\n\nThis link expires in 7 days.`, html: renderWorklistEmail({ title: 'Ready for your review.', description: `${item.contactName}, your team is ready for feedback on “${item.title}”.`, actionLabel: 'Review and respond', actionUrl: url, eyebrow: 'APPROVAL REQUEST', footer: 'This secure review link expires in 7 days.' }) })
             } catch (error) {
                 await repository.revoke(item.id, token)
                 throw error
@@ -77,9 +76,9 @@ export const createClientApprovalHandlers = ({ emailSender, webOrigin, cronSecre
                 const id = String(item._id)
                 if (!(await reminders.claimDue(id, dueDateKey))) continue
                 try {
-                    const recipient = await reminders.findAssigneeEmail(String(item.teamId), item.assignee) ?? item.clientRequest?.contactEmail
+                    const recipient = await reminders.findAssigneeEmail(String(item.teamId), item.assignee, item.assigneeEmail) ?? item.clientRequest?.contactEmail
                     if (!recipient) { await reminders.finishDue(id, dueDateKey, false); continue }
-                    await emailSender.send({ to: recipient, subject: `Due tomorrow: ${item.title}`, text: `Reminder: “${item.title}” is due on ${dueDateKey}.`, html: `<p>Reminder: <strong>${html(item.title)}</strong> is due on ${html(dueDateKey)}.</p>` })
+                    await emailSender.send({ to: recipient, subject: `Due tomorrow: ${item.title}`, text: `Reminder: “${item.title}” is due on ${dueDateKey}.`, html: renderWorklistEmail({ title: 'A little reminder for tomorrow.', description: `“${item.title}” is due on ${dueDateKey}.`, actionLabel: 'Open Worklist', actionUrl: new URL('/worklist', webOrigin).toString(), eyebrow: 'DUE TOMORROW' }) })
                     await reminders.finishDue(id, dueDateKey, true)
                     sent += 1
                 } catch {
@@ -95,7 +94,7 @@ export const createClientApprovalHandlers = ({ emailSender, webOrigin, cronSecre
                     const refreshed = await repository.request(String(item.teamId), id, token, new Date(Date.now() + 7 * 86_400_000))
                     if (!refreshed) throw new Error('Approval link could not be renewed.')
                     const url = new URL(`/client-approval/${token}`, webOrigin).toString()
-                    await emailSender.send({ to: refreshed.email, subject: `Reminder: approval needed for ${refreshed.title}`, text: `Please review “${refreshed.title}” and respond here: ${url}`, html: `<p>A reminder that your review is needed for <strong>${html(refreshed.title)}</strong>.</p><p><a href="${html(url)}">Review and respond</a></p>` })
+                    await emailSender.send({ to: refreshed.email, subject: `Reminder: approval needed for ${refreshed.title}`, text: `Please review “${refreshed.title}” and respond here: ${url}`, html: renderWorklistEmail({ title: 'Your feedback makes the difference.', description: `Your review is still needed for “${refreshed.title}”.`, actionLabel: 'Review and respond', actionUrl: url, eyebrow: 'REVIEW REMINDER', footer: 'This renewed review link expires in 7 days.' }) })
                     await reminders.finishApproval(id, true)
                     await activities.add(String(item.teamId), id, String(item.createdBy), 'Worklist reminders', 'approval_requested', `Sent an approval reminder to ${refreshed.email}.`)
                     events.publish(String(item.teamId), { type: 'activity', itemId: id })

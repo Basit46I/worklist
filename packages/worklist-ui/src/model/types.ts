@@ -13,6 +13,9 @@ export type WorkItem = Readonly<{
     status: WorkItemStatus
     priority: WorkItemPriority
     assignee: string
+    assigneeEmail?: string
+    assigneePending?: boolean
+    assignmentNotice?: string
     startDate?: string
     dueDate: string
     checklist?: readonly WorkItemChecklistEntry[]

@@ -52,16 +52,27 @@ export const useDashboardData = () => {
     const [signOutBusy, setSignOutBusy] = useState(false)
     const [error, setError] = useState('')
     const requestRevision = useRef(0)
+    const itemUpdateRevisions = useRef(new Map<string, number>())
+    const pendingItemUpdates = useRef(new Set<string>())
     const today = dateToIso(new Date())
 
     const updateItem = (itemId: string, changes: Partial<WorkItem>): void => {
         const previous = items.find((item) => item.id === itemId)
         if (!previous) return
+        const revision = (itemUpdateRevisions.current.get(itemId) ?? 0) + 1
+        itemUpdateRevisions.current.set(itemId, revision)
+        pendingItemUpdates.current.add(itemId)
         setItems((current) => current.map((item) => item.id === itemId ? { ...item, ...changes } : item))
         setError('')
         void updateWorkItem(itemId, changes, previous.updatedAt)
-            .then((updated) => setItems((current) => current.map((item) => item.id === itemId ? updated : item)))
+            .then((updated) => {
+                if (itemUpdateRevisions.current.get(itemId) !== revision) return
+                pendingItemUpdates.current.delete(itemId)
+                setItems((current) => current.map((item) => item.id === itemId ? updated : item))
+            })
             .catch((cause: unknown) => {
+                if (itemUpdateRevisions.current.get(itemId) !== revision) return
+                pendingItemUpdates.current.delete(itemId)
                 setItems((current) => current.map((item) => item.id === itemId ? previous : item))
                 setError(cause instanceof Error ? `Could not save the task change. ${cause.message}` : 'Could not save the task change.')
             })
@@ -80,7 +91,20 @@ export const useDashboardData = () => {
                 const loadedItems = await Promise.all(loadedLists.map((list) => loadListItems(list.id)))
                 if (!active || revision !== requestRevision.current) return
                 setLists(loadedLists)
-                setItems(loadedItems.flat())
+                const freshItems = loadedItems.flat()
+                setItems((current) => {
+                    const currentById = new Map(current.map((item) => [item.id, item]))
+                    const refreshed = freshItems.map((item) => {
+                        const existing = currentById.get(item.id)
+                        if (!existing) return item
+                        const existingTimestamp = existing.updatedAt ? Date.parse(existing.updatedAt) : Number.NaN
+                        const incomingTimestamp = item.updatedAt ? Date.parse(item.updatedAt) : Number.NaN
+                        return pendingItemUpdates.current.has(item.id) || existingTimestamp > incomingTimestamp ? existing : item
+                    })
+                    const refreshedIds = new Set(refreshed.map((item) => item.id))
+                    const localChanges = current.filter((item) => !refreshedIds.has(item.id) && pendingItemUpdates.current.has(item.id))
+                    return [...refreshed, ...localChanges]
+                })
                 setError('')
             } catch (cause) {
                 if (active && revision === requestRevision.current) {

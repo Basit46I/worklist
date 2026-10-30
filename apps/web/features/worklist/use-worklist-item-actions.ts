@@ -74,12 +74,12 @@ export const useWorklistItemActions = ({
             setNewDescription('')
             setNewStatus(activeStatuses[0] ?? 'To do')
             setNewPriority('Medium')
-            setNewAssignee('Unassigned')
+            setNewAssignee('')
             setNewDueDate(dateInOneWeek())
             setShowNewItem(false)
             setStatusFilter('All')
             setPageError('')
-            setPageNotice('Task created.')
+            setPageNotice(item.assignmentNotice ?? 'Task created.')
         } catch (error) {
             setPageError(error instanceof Error ? error.message : 'Could not create task.')
         }
@@ -96,12 +96,12 @@ export const useWorklistItemActions = ({
             description: '',
             status: parent.status,
             priority: parent.priority,
-            assignee: parent.assignee,
+            assignee: parent.assigneeEmail || 'Unassigned',
             dueDate: parent.dueDate
         })
             .then((subtask) => {
                 setItems((current) => [...current, subtask])
-                setPageNotice('Subtask added.')
+                setPageNotice(subtask.assignmentNotice ?? 'Subtask added.')
                 setPageError('')
             })
             .catch((error: unknown) => {
@@ -121,6 +121,7 @@ export const useWorklistItemActions = ({
         void updateWorkItem(itemId, changes, previous.updatedAt)
             .then((updated) => {
                 if (itemUpdateRevisions.current.get(itemId) !== revision) return
+                if (updated.assignmentNotice) setPageNotice(updated.assignmentNotice)
                 setItems((current) =>
                     changes.listId && changes.listId !== activeListId
                         ? current.filter((item) => item.id !== itemId)

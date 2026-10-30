@@ -2,7 +2,7 @@
 import { AuthBrandPanel } from './auth-brand-panel'
 
 import { useEffect, useRef, useState, type FormEvent, type ReactElement } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, Input } from '@workspace/ui/primitives'
@@ -85,18 +85,18 @@ export const AuthActionPage = ({ action }: Readonly<{ action: AuthAction }>): Re
         (action === 'accept-invitation' && Boolean(token))
 
     return (
-        <main className="min-h-screen bg-[#f3f5f1] px-4 py-5 text-[#17211c] sm:grid sm:place-items-center sm:px-6">
-            <section className="mx-auto grid min-h-[min(760px,calc(100vh-2.5rem))] w-full max-w-5xl overflow-hidden rounded-[1.75rem] border border-[#e1e6dd] bg-white shadow-[0_24px_80px_-40px_rgba(23,33,28,0.28)] lg:grid-cols-[0.9fr_1.1fr]">
+        <main className="worklist-auth-action min-h-screen bg-[#f3f5f1] px-4 py-5 text-[#17211c] sm:grid sm:place-items-center sm:px-6">
+            <section className="auth-action-panel mx-auto grid min-h-[min(760px,calc(100vh-2.5rem))] w-full max-w-5xl overflow-hidden rounded-[1.75rem] border border-[#e1e6dd] bg-white shadow-[0_24px_80px_-40px_rgba(23,33,28,0.28)] lg:grid-cols-[0.9fr_1.1fr]">
                 <AuthBrandPanel />
-                <div className="flex flex-col justify-center px-6 py-9 sm:px-12 lg:px-14 xl:px-20">
+                <div className="auth-action-content flex flex-col justify-center px-6 py-9 sm:px-12 lg:px-14 xl:px-20">
                     <Link
                         className="mb-12 flex w-fit items-center gap-3 font-semibold lg:hidden"
                         href="/sign-in">
                         <span className="grid size-9 place-items-center rounded-lg bg-[#243b2c] text-sm text-[#c7f36b]">W</span>Worklist
                     </Link>
                     <div className="mx-auto w-full max-w-md">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.19em] text-[#668356]">Account support</p>
-                        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.045em] text-[#17211c] sm:text-[2.15rem]">{titles[action]}</h1>
+                        <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.19em] text-[#668356]"><span className="size-1.5 rounded-full bg-[#789578]" />Account support</p>
+                        <h1 className="mt-3 text-[2rem] font-semibold leading-tight tracking-[-0.055em] text-[#1c3027] sm:text-[2.45rem]">{titles[action]}</h1>
                         <p className="mt-3 text-sm leading-6 text-[#718076]">{descriptions[action]}</p>
                         {needsForm && (
                             <form
@@ -196,10 +196,10 @@ export const AuthActionPage = ({ action }: Readonly<{ action: AuthAction }>): Re
                                     </p>
                                 )}
                                 <Button
-                                    className="h-12 w-full rounded-xl bg-[#243b2c] font-medium text-white shadow-sm hover:bg-[#314b37]"
+                                    className="auth-action-submit group h-[50px] w-full rounded-xl bg-[#214d3b] font-semibold text-white shadow-[0_8px_18px_-12px_rgba(27,74,53,.8)] hover:bg-[#173f30]"
                                     disabled={busy}
                                     type="submit">
-                                    {busy ? 'Please wait…' : actionLabels[action]}
+                                    {busy ? <><span aria-hidden="true" className="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />Please wait…</> : <>{actionLabels[action]}<ArrowRight aria-hidden="true" className="ml-2 inline size-4 transition-transform group-hover:translate-x-0.5" /></>}
                                 </Button>
                             </form>
                         )}

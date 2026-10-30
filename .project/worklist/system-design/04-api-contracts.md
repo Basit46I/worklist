@@ -132,3 +132,11 @@ These are current implementation details and remain provisional until product re
 - Editors can archive and restore tasks. Normal list queries return active tasks; `includeArchived=true` returns archived tasks for that list.
 - CSV export contains the currently loaded tasks that match the active search and filters. It is not an all-pages export when the list is paginated.
 - The worklist page supports `N` to open task creation and `/` to focus search. Shortcuts are disabled while the user is typing in a form field.
+
+## Email assignment (2026-10-30)
+
+Task creation, individual updates, and bulk assignment accept an email in `assignee` (or blank/`Unassigned` to clear it). The server normalizes and resolves the email; task responses retain `assignee` as the display name and include `assigneeEmail`. Existing name-only records remain readable. The list response resolves names from current team membership and includes `assigneePending` for addresses that have not joined.
+
+Owners may assign to a new email, which creates an editor invitation through the existing auth service. Editors may assign existing workspace members but cannot invite new members. Addresses belonging to another workspace are rejected. New assignments require configured SMTP; task persistence precedes notification. A mail transport failure returns the saved task plus an `assignmentNotice` explaining how to retry, rather than reporting a failed task save. Re-submitting an assignment intentionally retries the email. Bulk assignment sends one summary notification for applied tasks and returns the resolved `assignment` plus `assignmentNotice`.
+
+Email templates for verification, password reset, invitations, assignments, approvals, and reminders share an escaped, inline-styled HTML layout with a text fallback. User-facing links use the configured web origin. Live Gmail delivery is not part of the deterministic test suite.

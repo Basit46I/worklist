@@ -1,0 +1,228 @@
+/* Unified product refresh: applied only to Worklist, never to Operations. */
+.worklist-app {
+    --worklist-canvas: #f4f6f1;
+    --worklist-forest: #153f34;
+    --worklist-ink: #1c342a;
+    --worklist-muted: #75827a;
+    --worklist-line: #e1e8e0;
+    background: var(--worklist-canvas);
+    color: var(--worklist-ink);
+}
+
+.worklist-sidebar {
+    z-index: 31;
+    padding-top: 22px;
+    background: linear-gradient(180deg, #143d32 0%, #10372e 100%);
+    box-shadow: inset -1px 0 rgb(255 255 255 / 5%);
+}
+
+.worklist-brand {
+    min-height: 44px;
+    margin-bottom: 36px;
+}
+
+.worklist-brand a > svg {
+    width: 34px;
+    height: 34px;
+    padding: 7px;
+    border: 1px solid rgb(179 220 185 / 20%);
+    border-radius: 11px;
+    background: rgb(205 235 199 / 10%);
+    color: #c9e5bd;
+}
+
+.worklist-brand a > span:not(.sr-only) {
+    color: #f2f6ef;
+    font-size: 19px;
+    font-weight: 650;
+    letter-spacing: -.055em;
+}
+
+.worklist-sidebar > p {
+    margin: 0 0 9px;
+    color: #9fb7aa;
+    letter-spacing: .13em;
+}
+
+.worklist-primary-nav {
+    gap: 5px;
+}
+
+.worklist-primary-nav a {
+    position: relative;
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    color: #cad8d0;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.worklist-primary-nav a:hover {
+    background: rgb(255 255 255 / 7%);
+    color: #fff;
+}
+
+.worklist-primary-nav a[aria-current="page"] {
+    border-color: rgb(196 225 190 / 12%);
+    background: #e4eee1;
+    color: #194336;
+    box-shadow: 0 5px 14px -12px rgb(0 0 0 / 42%);
+}
+
+.worklist-primary-nav a[aria-current="page"]::before {
+    position: absolute;
+    left: -1px;
+    width: 3px;
+    height: 22px;
+    border-radius: 0 4px 4px 0;
+    background: #96bd91;
+    content: '';
+}
+
+.worklist-primary-nav a[aria-current="page"] svg {
+    color: #397456;
+}
+
+.worklist-account {
+    border-color: rgb(255 255 255 / 12%);
+}
+
+.worklist-account > div:first-child {
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 12px;
+    background: rgb(255 255 255 / 6%);
+    padding: 8px;
+}
+
+.worklist-account > div:first-child > span:first-child {
+    border: 2px solid rgb(226 241 221 / 60%);
+    background: #dae9d4;
+}
+
+.worklist-topbar {
+    min-height: 72px;
+    border-color: #e2e9e1;
+    background: rgb(250 251 248 / 92%);
+    box-shadow: 0 2px 14px -14px rgb(23 52 41 / 24%);
+}
+
+.worklist-topbar button {
+    border-radius: 10px;
+}
+
+.worklist-topbar-actions > button[aria-label="Open account menu"] {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #dce7dc;
+    background: #e9f0e7;
+    color: #28543e;
+    font-size: 11px;
+}
+
+.worklist-breadcrumbs > span:first-of-type {
+    color: #64746a;
+    font-size: 12px;
+    font-weight: 550;
+}
+
+.worklist-main {
+    background:
+        radial-gradient(ellipse at 95% 0%, rgb(228 236 222 / 42%), transparent 34rem),
+        #f5f7f3;
+}
+
+.worklist-main > div.mx-auto,
+.dashboard-page,
+.calendar-page {
+    padding-top: clamp(24px, 3vw, 40px);
+}
+
+.worklist-page-heading,
+.dashboard-page-heading {
+    min-height: 142px;
+    border-color: #e0e8df;
+    border-radius: 18px;
+    background: linear-gradient(110deg, #fff 0%, #fff 73%, #f1f6ed 100%);
+    box-shadow: 0 14px 34px -32px rgb(22 57 40 / 45%);
+}
+
+.worklist-page-heading h1,
+.dashboard-page-heading h1 {
+    color: #1c382b;
+    font-size: clamp(29px, 3vw, 38px);
+    font-weight: 620;
+    letter-spacing: -.055em;
+}
+
+.worklist-page-heading p,
+.dashboard-page-heading p {
+    letter-spacing: .005em;
+}
+
+.worklist-primary-actions button,
+.dashboard-page-heading button,
+.dashboard-page-heading a[role="link"] {
+    min-height: 42px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.worklist-primary-actions button[class*="bg-[#245d43]"],
+.dashboard-page-heading a[class*="bg-[#245d43]"] {
+    background: #1c5940;
+    box-shadow: 0 7px 14px -10px rgb(22 76 51 / 80%);
+}
+
+.worklist-primary-actions button[class*="bg-[#245d43]"]:hover,
+.dashboard-page-heading a[class*="bg-[#245d43]"]:hover {
+    background: #144a35;
+}
+
+.worklist-list-toolbar {
+    min-height: 64px;
+    border-color: #e2e9e1;
+    border-radius: 14px;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 8px 24px -25px rgb(23 57 42 / 40%);
+}
+
+.worklist-list-toolbar > label {
+    min-height: 40px;
+    border-color: #e0e8df;
+    background: #f8faf7;
+    border-radius: 9px;
+}
+
+.worklist-list-toolbar button {
+    min-height: 38px;
+    border-radius: 9px;
+}
+
+.worklist-view-tabs {
+    min-height: 51px;
+    border-color: #e0e8df;
+    border-radius: 13px 13px 0 0;
+    background: #f8faf7;
+    padding-inline: 12px;
+}
+
+.worklist-view-tabs button {
+    min-width: 92px;
+    min-height: 48px;
+    justify-content: center;
+    color: #79867d;
+}
+
+.worklist-view-tabs button[aria-current="page"] {
+    color: #214f39;
+    background: transparent;
+}
+
+.worklist-view-tabs button[aria-current="page"] > span[aria-hidden="true"] {
+    height: 3px;
+    background: #397655;
+}
+
+.worklist-page > div:has(> p:first-child):not(:has(button)) {
+    color: #6d7d72;
+}

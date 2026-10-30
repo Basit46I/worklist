@@ -11,6 +11,7 @@ export type WorkItemRecord = Readonly<{
     status: string
     priority: 'Low' | 'Medium' | 'High'
     assignee: string
+    assigneeEmail?: string
     startDate?: Date
     dueDate: Date
     checklist?: readonly Readonly<{ id: string; text: string; completed: boolean }>[]
@@ -44,7 +45,8 @@ const workItemSchema = new Schema<WorkItemRecord>(
         description: { type: String, trim: true, maxlength: 2000, default: '' },
         status: { type: String, required: true, trim: true, maxlength: 40 },
         priority: { type: String, enum: ['Low', 'Medium', 'High'], required: true },
-        assignee: { type: String, required: true, trim: true, maxlength: 120 },
+        assignee: { type: String, required: true, trim: true, maxlength: 254 },
+        assigneeEmail: { type: String, trim: true, lowercase: true, maxlength: 254, default: '' },
         startDate: { type: Date, required: false },
         dueDate: { type: Date, required: true },
         checklist: {

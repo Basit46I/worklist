@@ -17,3 +17,5 @@ export const createSmtpEmailSender = (config: SmtpConfig): EmailSender => {
         }
     })
 }
+
+export { renderWorklistEmail } from './template.js'

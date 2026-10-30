@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type FormEvent, type ReactElement } from 'react'
-import { Archive, ChevronDown, Copy, FileText, Folder, Link2, Pencil, Settings2, Trash2, Workflow } from 'lucide-react'
+import { Archive, Copy, FileText, Folder, Link2, MoreHorizontal, Pencil, Settings2, Trash2, Workflow } from 'lucide-react'
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, Input } from '@workspace/ui/primitives'
 import { createClientRequestForm, fetchWorklistLists, revokeClientRequestForm, updateWorklistList, type WorklistList } from '../api'
 import { useWorklistPageState } from '../use-worklist-page-state'
@@ -82,7 +82,7 @@ export const WorklistListWorkspace = ({ state, listActions, templateActions, act
     return (
         <div className="inline-flex items-center">
             {editable && <DropdownMenu>
-                <DropdownMenuTrigger asChild><button aria-label={`List options for ${activeList?.name ?? 'current list'}`} className="grid size-7 place-items-center rounded-full text-[#74847a] transition hover:bg-[#eaf0e9] hover:text-[#244a37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#688b70]" type="button"><ChevronDown aria-hidden="true" className="size-4" /></button></DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild><button aria-label={`List options for ${activeList?.name ?? 'current list'}`} className="grid size-7 place-items-center rounded-full text-[#74847a] transition hover:bg-[#eaf0e9] hover:text-[#244a37] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#688b70]" type="button"><MoreHorizontal aria-hidden="true" className="size-4" /></button></DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-60 rounded-xl border-[#dce4da] p-1.5">
                     <DropdownMenuLabel className="px-2 py-1.5 text-[10px] uppercase tracking-[.13em] text-[#879188]">List options</DropdownMenuLabel>
                     <DropdownMenuItem onSelect={() => { state.setNewListSpace(activeList?.spaceName ?? 'General'); setLocationOpen(true) }}><Folder aria-hidden="true" />Move to space or folder</DropdownMenuItem>

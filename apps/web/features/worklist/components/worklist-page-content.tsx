@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, type ReactElement } from "react";
-import { CalendarDays, Columns3, ListTodo, PanelsTopLeft, Plus, UsersRound } from "lucide-react";
-import { Button } from "@workspace/ui/primitives";
+import { CalendarDays, ChevronDown, Columns3, ListTodo, MoreHorizontal, PanelsTopLeft, Plus, UsersRound } from "lucide-react";
+import { Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@workspace/ui/primitives";
 import { WorklistControls } from "@workspace/worklist-ui";
 import type { WorklistGroup } from "@workspace/worklist-ui";
 import type { WorklistList } from "../api";
@@ -51,6 +51,9 @@ type WorklistPageContentProps = Readonly<{
     data: PageData;
     onSignOut: () => void;
 }>;
+
+const initials = (name: string): string => name.trim().split(/\s+/).slice(0, 2).map((part) => part[0] ?? "").join("").toUpperCase();
+
 export const WorklistPageContent = ({
     state,
     actions,
@@ -67,6 +70,8 @@ export const WorklistPageContent = ({
     const { createItem } = itemActions
     const { addFilter, updateFilter, toggleColumn } = viewActions
     const { openTeamMembers } = teamActions
+    const members = [user, ...state.teamMembers.filter((member) => member.id !== user.id)].slice(0, 4)
+    const memberStack = <span className="flex items-center -space-x-2">{members.map((member, index) => <span aria-hidden="true" className={`grid size-8 place-items-center rounded-full border-2 border-white text-[10px] font-semibold text-white ${index % 3 === 0 ? 'bg-[#55765e]' : index % 3 === 1 ? 'bg-[#879b7e]' : 'bg-[#777f72]'}`} key={member.id}>{initials(member.name)}</span>)}</span>
     const openTemplates = (): void => { state.setTemplateId((current) => current || state.templates[0]?.id || ""); state.setShowTemplatePicker(true); state.setShowTemplateBuilder(false) }
     const createList = (): void => { state.setListNameDraft(''); state.setShowListForm(true) }
     return (
@@ -77,50 +82,34 @@ export const WorklistPageContent = ({
             user={user}
             {...(activeList ? { projectContext: { spaceName: activeList.spaceName, ...(activeList.folderName ? { folderName: activeList.folderName } : {}), listName: activeList.name } } : {})}
         >
-            <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-7 sm:px-8 sm:pt-8">
-                <div className="mb-7 flex flex-col justify-between gap-5 border-b border-[#e5eae3] pb-6 sm:flex-row sm:items-end">
+            <div className="worklist-page mx-auto max-w-[1500px] px-5 pb-16 pt-6 sm:px-8 sm:pt-7">
+                <header className="mb-3 flex flex-col justify-between gap-4 pb-3 sm:flex-row sm:items-center">
                     <div className="min-w-0">
-                        <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[.12em] text-[#718076]">
-                            <span>{activeList?.spaceName ?? 'General'} workspace</span><span aria-hidden="true" className="text-[#b7c0b8]">/</span><span>{activeList?.folderName || 'Lists'}</span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[#eaf1e8] px-2 py-1 text-[9px] font-medium normal-case tracking-normal text-[#516c59]"><span className="size-1.5 rounded-full bg-[#729276]" />{activeList?.archivedAt ? 'Archived' : 'Active'}</span>
-                        </p>
-                        <div className="flex items-center gap-2">
-                            <h1 className="truncate font-serif text-[32px] font-normal leading-tight tracking-[-.025em] text-[#243d32] sm:text-[38px]">{activeList?.name ?? 'Your work'}</h1>
+                        <div className="flex items-center gap-2.5"><span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-lg bg-violet-500 text-lg font-semibold text-white">{initials(activeList?.name ?? "Tasks").slice(0, 1)}</span>
+                            <label className="flex min-w-0 cursor-pointer items-center gap-1">
+                                <span className="sr-only">Choose list</span>
+                                <select aria-label="Choose list" className="max-w-full cursor-pointer appearance-none bg-transparent pr-7 text-[25px] font-semibold tracking-[-.04em] text-[#202923] outline-none sm:text-[29px]" onChange={(event) => { const selected = state.lists.find((list) => list.id === event.target.value); if (selected) listActions.selectList(selected) }} value={state.activeListId}>
+                                    {state.lists.filter((list) => !list.archivedAt).map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
+                                </select>
+                                <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-[#69756d]" />
+                            </label>
                             <WorklistListWorkspace activeList={activeList} listActions={listActions} state={state} templateActions={templateActions} user={user} />
+                            {activeList?.archivedAt && <span className="rounded-full bg-[#f2f4f0] px-2 py-1 text-[10px] font-medium text-[#6c776f]">Archived</span>}
                         </div>
-                        <p className="mt-2 max-w-2xl text-[13px] leading-5 text-[#76847a]">
-                            {activeList?.description || `Plan work, track progress, and keep ${user.teamName} aligned.`}
-                        </p>
                     </div>
-                    <div className="flex shrink-0 flex-wrap items-center gap-2">
-                        {user.role === "owner" && <>
-                            <Button className="h-10 rounded-lg border-[#dce5dd] bg-white px-3 text-[13px] text-[#355345] shadow-none hover:bg-[#f5f8f5]" onClick={() => setShowInviteForm((shown) => !shown)} variant="outline"><UsersRound aria-hidden="true" className="size-4" />Invite</Button>
-                        </>}
-                        {user.role !== "viewer" && (
-                            <Button
-                                className="h-10 rounded-lg bg-[#245d43] px-4 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[#174638] focus-visible:ring-2 focus-visible:ring-[#79a18a]"
-                                onClick={() => setShowNewItem((shown) => !shown)}
-                                title="Keyboard shortcut: N"
-                            >
-                                <Plus aria-hidden="true" className="size-4" /> Add task
-                            </Button>
-                        )}
+                    <div className="flex shrink-0 items-center gap-3">
+                        {user.role === 'owner' ? <button aria-label="View team members" className="rounded-full p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#557a60]" onClick={openTeamMembers} type="button">{memberStack}</button> : <div aria-label="Workspace members">{memberStack}</div>}
+                        {user.role === 'owner' && <Button className="h-9 rounded-lg border-[#dce2dd] bg-white px-3 text-[12px] font-medium text-[#35483b] shadow-none hover:bg-[#f7f8f6]" onClick={() => setShowInviteForm(true)} variant="outline"><UsersRound aria-hidden="true" className="size-3.5" />Invite</Button>}
+                        {user.role !== 'viewer' && <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button aria-label="More workspace actions" className="size-9 rounded-lg border-[#dce2dd] bg-white p-0 text-[#58655b] shadow-none" variant="outline"><MoreHorizontal aria-hidden="true" className="size-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onSelect={openTemplates}><PanelsTopLeft aria-hidden="true" />Templates</DropdownMenuItem>
+                                {user.role === 'owner' && <DropdownMenuItem onSelect={openTeamMembers}><UsersRound aria-hidden="true" />Manage team</DropdownMenuItem>}
+                                <DropdownMenuItem onSelect={createList}><Plus aria-hidden="true" />New list</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>}
                     </div>
-                </div>
-
-                <div className="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                    <label className="flex h-9 min-w-44 max-w-sm items-center gap-2 rounded-lg border border-[#e6ebe4] bg-white px-3 text-[11px] font-medium text-[#78857d]">
-                        <span>List</span>
-                        <select aria-label="Choose list" className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-[#30473a] outline-none" onChange={(event) => { const selected = state.lists.find((list) => list.id === event.target.value); if (selected) listActions.selectList(selected) }} value={state.activeListId}>
-                            {state.lists.filter((list) => !list.archivedAt).map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
-                        </select>
-                    </label>
-                    <div className="flex flex-wrap items-center gap-2">
-                        {user.role !== 'viewer' && <Button className="h-9 rounded-lg border-[#dce5dd] bg-white px-3 text-xs text-[#355345] shadow-none hover:bg-[#f5f8f5]" onClick={openTemplates} variant="outline"><PanelsTopLeft aria-hidden="true" className="size-3.5" />Templates</Button>}
-                        {user.role === 'owner' && <Button className="h-9 rounded-lg border-[#dce5dd] bg-white px-3 text-xs text-[#355345] shadow-none hover:bg-[#f5f8f5]" onClick={openTeamMembers} variant="outline"><UsersRound aria-hidden="true" className="size-3.5" />Manage team</Button>}
-                        {user.role !== 'viewer' && <Button className="h-9 rounded-lg bg-[#edf3eb] px-3 text-xs font-medium text-[#355345] shadow-none hover:bg-[#e3ece1]" onClick={createList}><Plus aria-hidden="true" className="size-3.5" />New list</Button>}
-                    </div>
-                </div>
+                </header>
 
                 <WorklistTeamPanel actions={teamActions} state={state} />
 
@@ -132,18 +121,15 @@ export const WorklistPageContent = ({
                 />
                 <WorklistFeedbackPanels savedViewActions={savedViewActions} state={state} />
 
-                <nav aria-label="Worklist views" className="flex items-center gap-6 border-b border-[#dfe5df]">
-                    <button aria-current={viewMode === 'list' ? 'page' : undefined} className={`relative inline-flex h-10 items-center gap-2 text-[13px] ${viewMode === 'list' ? 'font-semibold text-[#234b38]' : 'text-[#78857d] hover:text-[#334b3c]'}`} onClick={() => setViewMode('list')} type="button"><ListTodo aria-hidden="true" className="size-4" />List{viewMode === 'list' && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#3c7154]" />}</button>
-                    <button aria-current={viewMode === 'board' ? 'page' : undefined} className={`relative inline-flex h-10 items-center gap-2 text-[13px] ${viewMode === 'board' ? 'font-semibold text-[#234b38]' : 'text-[#78857d] hover:text-[#334b3c]'}`} onClick={() => setViewMode('board')} type="button"><Columns3 aria-hidden="true" className="size-4" />Board{viewMode === 'board' && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#3c7154]" />}</button>
-                    <button aria-current={viewMode === 'calendar' ? 'page' : undefined} className={`relative inline-flex h-10 items-center gap-2 text-[13px] ${viewMode === 'calendar' ? 'font-semibold text-[#234b38]' : 'text-[#78857d] hover:text-[#334b3c]'}`} onClick={() => setViewMode('calendar')} type="button"><CalendarDays aria-hidden="true" className="size-4" />Calendar{viewMode === 'calendar' && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#3c7154]" />}</button>
-                    <span className="ml-auto pb-2 text-xs text-[#849188]">{data.filteredItems.length} tasks in this view</span>
-                </nav>
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 pt-3 text-[10px] font-medium uppercase tracking-[.08em] text-[#718076]">
-                    <p>List scope · {activeList?.name ?? 'All lists'} · {data.filteredItems.filter((item) => !item.parentId).length} top-level tasks</p>
-                    <p className="normal-case tracking-normal text-[#849188]">As of {new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date())}</p>
-                </div>
-                <div className="mb-3 border-b border-[#e5eae3] pb-4">
-                <WorklistControls
+                <section aria-label="Worklist views and actions" className="mb-3 flex flex-col justify-between gap-3 border-b border-[#e8e8ed] bg-white pb-2 md:flex-row md:items-center">
+                    <nav aria-label="Worklist views" className="worklist-view-tabs flex shrink-0 items-center gap-1 sm:gap-2">
+                        <button aria-current={viewMode === 'board' ? 'page' : undefined} className={`relative inline-flex h-10 items-center gap-2 text-[13px] ${viewMode === 'board' ? 'font-semibold text-[#234b38]' : 'text-[#78857d] hover:text-[#334b3c]'}`} onClick={() => setViewMode('board')} type="button"><Columns3 aria-hidden="true" className="size-4" />Kanban{viewMode === 'board' && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#3c7154]" />}</button>
+                        <button aria-current={viewMode === 'calendar' ? 'page' : undefined} className={`relative inline-flex h-10 items-center gap-2 text-[13px] ${viewMode === 'calendar' ? 'font-semibold text-[#234b38]' : 'text-[#78857d] hover:text-[#334b3c]'}`} onClick={() => setViewMode('calendar')} type="button"><CalendarDays aria-hidden="true" className="size-4" />Calendar{viewMode === 'calendar' && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#3c7154]" />}</button>
+                        <button aria-current={viewMode === 'list' ? 'page' : undefined} className={`relative inline-flex h-10 items-center gap-2 text-[13px] ${viewMode === 'list' ? 'font-semibold text-[#234b38]' : 'text-[#78857d] hover:text-[#334b3c]'}`} onClick={() => setViewMode('list')} type="button"><ListTodo aria-hidden="true" className="size-4" />List{viewMode === 'list' && <span className="absolute inset-x-0 bottom-0 h-[2px] bg-[#3c7154]" />}</button>
+                    </nav>
+                    <div className="flex min-w-0 flex-1 items-center gap-2 md:justify-end">
+                        <div className="min-w-0 flex-1 md:flex md:justify-end">
+                <WorklistControls compact
                     search={search}
                     onSearchChange={setSearch}
                     statusFilter={statusFilter}
@@ -187,7 +173,11 @@ export const WorklistPageContent = ({
                     sortDirection={sortDirection}
                     onSortChange={viewActions.handleSort}
                 />
-                </div>
+                        </div>
+                        <span className="hidden shrink-0 text-xs text-[#849188] 2xl:inline">{data.filteredItems.length} tasks</span>
+                        {user.role !== 'viewer' && <Button className="h-9 shrink-0 rounded-lg bg-[#202321] px-3.5 text-xs font-semibold text-white shadow-none hover:bg-[#343935]" onClick={() => setShowNewItem((shown) => !shown)} title="Keyboard shortcut: N"><Plus aria-hidden="true" className="size-4" />New Task</Button>}
+                    </div>
+                </section>
                 <div className={`grid items-start gap-4 ${showColumnPicker && viewMode === 'list' ? 'xl:grid-cols-[minmax(0,1fr)_238px]' : ''}`}>
                     <div className="min-w-0">
                         <WorklistBulkActionsBar

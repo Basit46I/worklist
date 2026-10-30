@@ -1,0 +1,227 @@
+/* Product workspace. Operations uses its own route and is intentionally outside this scope. */
+.worklist-app {
+    --worklist-canvas: #f5f6f2;
+    --worklist-line: #e1e7df;
+    background: var(--worklist-canvas);
+}
+
+.worklist-app aside[aria-label="Workspace navigation"] {
+    background: linear-gradient(180deg, #174638 0%, #123c31 100%);
+    box-shadow: 1px 0 0 rgb(13 47 37 / 10%);
+}
+
+.worklist-topbar {
+    min-height: 68px;
+    border-color: #e3e9e1;
+    background: rgb(250 251 248 / 94%);
+}
+
+.worklist-main > div.mx-auto {
+    padding-top: clamp(22px, 3vw, 38px);
+}
+
+.worklist-main > div.mx-auto > header:not(.worklist-page-heading) {
+    border-color: #e2e8e0;
+    background: linear-gradient(105deg, #fff 0%, #fff 70%, #f6f8f2 100%);
+    box-shadow: 0 14px 38px -34px rgb(25 55 40 / 42%);
+}
+
+.worklist-page-heading {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(105deg, #fff 0%, #fff 67%, #f6f8f2 100%);
+}
+
+.worklist-main .worklist-page > header:not(.worklist-page-heading) {
+    border-color: #e6e9e5;
+    background: transparent;
+    box-shadow: none;
+}
+
+.worklist-page-heading::after {
+    position: absolute;
+    right: -3rem;
+    top: -7rem;
+    width: 17rem;
+    height: 17rem;
+    border: 1px solid rgb(80 118 83 / 8%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 24px rgb(80 118 83 / 2%), 0 0 0 52px rgb(80 118 83 / 1.5%);
+    content: '';
+    pointer-events: none;
+}
+
+.worklist-page-heading > * {
+    position: relative;
+    z-index: 1;
+}
+
+.worklist-list-toolbar {
+    position: relative;
+    z-index: 5;
+}
+
+.worklist-view-tabs button {
+    position: relative;
+    min-height: 42px;
+    border-radius: 9px 9px 0 0;
+    padding-inline: 12px;
+    color: #7b877e;
+    transition: color 150ms ease, background-color 150ms ease;
+}
+
+.worklist-view-tabs button:hover {
+    background: #eef3ec;
+}
+
+.worklist-view-tabs button[aria-current="page"] {
+    color: #214d3b;
+    background: #fff;
+}
+
+.worklist-view-tabs button[aria-current="page"] > span[aria-hidden="true"] {
+    height: 3px;
+    border-radius: 4px 4px 0 0;
+    background: #477651;
+}
+
+.worklist-page [aria-label="Project tasks"] {
+    margin-top: 8px;
+}
+
+.worklist-page [aria-label="Project tasks"] > div:first-child {
+    background: #fff;
+}
+
+.worklist-main [aria-label="Workspace summary"] > article {
+    min-height: 118px;
+}
+
+.worklist-main [aria-label="calendar task timeline"] > header {
+    border: 1px solid #e2e8e0;
+    border-radius: 15px;
+    background: #fff;
+    padding: 14px 16px;
+    box-shadow: 0 8px 24px -24px rgb(28 53 39 / 32%);
+}
+
+.worklist-main [aria-label="calendar task timeline"] [aria-label="Month calendar"] > div:first-child {
+    background: #f7f9f5;
+}
+
+.worklist-main [aria-label="calendar task timeline"] [aria-label$="timeline bar"] {
+    border-radius: 999px !important;
+    box-shadow: 0 2px 5px rgb(32 58 42 / 9%);
+}
+
+@media (max-width: 640px) {
+    .worklist-page-heading::after {
+        right: -10rem;
+        opacity: .65;
+    }
+
+    .worklist-view-tabs {
+        gap: 0;
+        overflow-x: auto;
+    }
+
+    .worklist-view-tabs button {
+        flex: 0 0 auto;
+        padding-inline: 9px;
+    }
+
+    .worklist-view-tabs > span {
+        display: none;
+    }
+}
+
+.worklist-main :is(input:not([type="checkbox"]), select, textarea) {
+    border-color: #e1e7df;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #263d34;
+}
+
+.worklist-main :is(input:not([type="checkbox"]), select, textarea):focus-visible {
+    border-color: #78947a;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgb(106 146 112 / 13%);
+}
+
+.worklist-main table {
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+}
+
+.worklist-main thead th {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: #f8faf6;
+    color: #738078;
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+}
+
+.worklist-main tbody tr {
+    transition: background-color 130ms ease;
+}
+
+.worklist-main tbody tr:hover {
+    background-color: #f8faf6;
+}
+
+.worklist-main [aria-label="Project tasks"] {
+    overflow: hidden;
+    border: 1px solid #e2e8e0;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 8px 24px -24px rgb(28 53 39 / 32%);
+}
+
+.worklist-main [aria-label="calendar task timeline"] [aria-label="Month calendar"] {
+    border-color: #e2e8e0;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px -24px rgb(28 53 39 / 32%);
+}
+
+.worklist-main [aria-label="Workspace summary"] > article,
+.worklist-main [aria-label="Workspace lists"] article,
+.worklist-main [aria-label="Workspace reports"] article {
+    border-color: #e5eae3;
+    box-shadow: 0 8px 24px -24px rgb(28 53 39 / 30%);
+    transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.worklist-main [aria-label="Workspace lists"] article:hover {
+    transform: translateY(-2px);
+    border-color: #cfdccf;
+    box-shadow: 0 14px 30px -24px rgb(28 53 39 / 26%);
+}
+
+.worklist-main button:focus-visible,
+.worklist-main a:focus-visible,
+.worklist-app aside button:focus-visible {
+    outline: 2px solid #73947b;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .worklist-auth .auth-preview {
+        animation: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .worklist-main *,
+    .worklist-app aside *,
+    .worklist-app nav * {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

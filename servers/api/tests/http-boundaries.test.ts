@@ -59,6 +59,28 @@ void test('applies the configured API rate limit and keeps health probes availab
     assert.equal((await fetch(`${origin}/auth/session`, { method: 'OPTIONS' })).status, HTTP_STATUS.noContent)
 })
 
+void test('allows cross-origin task update preflights with the concurrency header', async (context) => {
+    const server = createServer({ app: createApp({ config, logger }), config, logger })
+    await server.start()
+    context.after(async () => server.stop())
+    const address = server.raw.address()
+    assert.ok(address && typeof address === 'object')
+
+    const response = await fetch(`http://127.0.0.1:${String(address.port)}/work-items/example`, {
+        method: 'OPTIONS',
+        headers: {
+            Origin: config.webOrigin,
+            'Access-Control-Request-Method': 'PATCH',
+            'Access-Control-Request-Headers': 'content-type,if-match'
+        }
+    })
+
+    assert.equal(response.status, HTTP_STATUS.noContent)
+    assert.equal(response.headers.get('access-control-allow-origin'), config.webOrigin)
+    assert.match(response.headers.get('access-control-allow-headers') ?? '', /if-match/i)
+    assert.match(response.headers.get('access-control-allow-methods') ?? '', /patch/i)
+})
+
 void test('applies the request limit consistently during a concurrent burst', async (context) => {
     const limit = 25
     const total = 100

@@ -1,0 +1,86 @@
+/* Compact project list navigation. */
+.worklist-page .worklist-view-tabs {
+    min-height: 40px;
+    border-radius: 0;
+    background: white;
+    padding-inline: 0;
+}
+.worklist-page .worklist-view-tabs button {
+    min-height: 40px;
+    min-width: 86px;
+}
+.worklist-page [aria-label="Task controls"] {
+    gap: 8px;
+}
+.worklist-page [aria-label="Task controls"] input,
+.worklist-page [aria-label="Task controls"] button {
+    height: 36px;
+    border-radius: 6px;
+}
+
+/* Reference list: neutral canvas, fine grid and compact project controls. */
+.worklist-main:has(.worklist-reference-table) { background: #fff; }
+.worklist-page { color: #29283c; }
+.worklist-page > header { border: 0; border-radius: 0; background: white; box-shadow: none; }
+.worklist-page > header::before, .worklist-page > header::after { display: none; }
+.worklist-page [aria-label="Project tasks"] { border: 0; border-radius: 0; box-shadow: none; background: white; }
+.worklist-page .worklist-view-tabs button { color: #777582; font-size: 12px; }
+.worklist-page .worklist-view-tabs button[aria-current="page"] { color: #29283c; }
+.worklist-page .worklist-view-tabs button[aria-current="page"] > span { background: #29283c; height: 2px; }
+.worklist-reference-table th { height: 40px; background: #fff !important; color: #898591 !important; }
+.worklist-reference-table th button { text-transform: none; letter-spacing: 0; font-size: 11px; font-weight: 400; }
+.worklist-reference-table tr:not(.worklist-status-group) { border-color: #f0eff3; background: #fff; }
+.worklist-reference-table td:not([colspan]) { height: 40px; padding-block: 7px; border-right: 1px solid #f3f2f6; font-size: 11px; }
+.worklist-reference-table input, .worklist-reference-table select { font-size: 11px; }
+.worklist-reference-table [role="checkbox"] { width: 12px; height: 12px; border-radius: 2px; }
+.worklist-page [aria-label="Task controls"] input { width: 140px; font-size: 11px; }
+.worklist-page [aria-label="Task controls"] button { font-size: 11px; }
+/* Screenshot-matched list surface, scoped to the project workspace. */
+.worklist-main:has(.worklist-page) { background: #fff; }
+.worklist-main > .worklist-page { max-width: none; padding: 30px 28px 28px; font-family: Arial, Helvetica, sans-serif; }
+.worklist-page > header { margin-bottom: 15px; padding-bottom: 0; min-height: 36px; }
+.worklist-page > header select { border: 0; border-radius: 0; color: #242236; font-size: 29px; font-weight: 500; letter-spacing: -.9px; }
+.worklist-page > header [aria-hidden="true"].bg-violet-500 { background: linear-gradient(135deg, #a398ff, #6860ef); box-shadow: 0 1px 4px #d9d4fa; }
+.worklist-page > header button { border-color: #eeeef2; border-radius: 5px; }
+.worklist-page > header button:has(> svg) { height: 28px; }
+.worklist-page [aria-label="Worklist views and actions"] { gap: 12px; padding-bottom: 0; margin-bottom: 0; }
+.worklist-page .worklist-view-tabs { min-height: 44px; gap: 8px; }
+.worklist-page .worklist-view-tabs button { min-width: 78px; min-height: 44px; padding-inline: 12px; font-weight: 400; }
+.worklist-page .worklist-view-tabs button[aria-current="page"] { font-weight: 600; }
+.worklist-page .worklist-view-tabs button svg { width: 13px; height: 13px; }
+.worklist-page [aria-label="Task controls"] { flex-direction: row; align-items: center; gap: 10px; }
+.worklist-page [aria-label="Task controls"] > div:first-child > div { min-width: 94px; flex: initial; }
+.worklist-page [aria-label="Task controls"] input { width: 94px; height: 28px; min-height: 28px; border-color: #eeeef2; padding-left: 30px; border-radius: 5px; }
+.worklist-page [aria-label="Task controls"] button { height: 28px; border-color: #eeeef2; color: #353244; border-radius: 5px; }
+.worklist-page [aria-label="Worklist views and actions"] button[title="Keyboard shortcut: N"] { height: 28px; border-radius: 5px; background: #242330; padding-inline: 10px; font-size: 11px; font-weight: 400; }
+.worklist-page .worklist-reference-table { max-height: calc(100vh - 230px) !important; }
+.worklist-page .worklist-reference-table table { border-collapse: collapse; }
+.worklist-reference-table .worklist-status-group > td { padding-top: 20px; }
+.worklist-reference-table .worklist-status-group:first-child > td { padding-top: 0; }
+.worklist-reference-table .worklist-status-group > td > div:first-child { height: 32px; background: #f6f6f9; border-radius: 6px; }
+.worklist-reference-table .worklist-status-group table th { position: static; padding: 0 8px; font-size: 11px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.worklist-reference-table .worklist-status-group table th:first-child { padding-left: 12px; }
+.worklist-reference-table td:not([colspan]) { padding: 7px 8px; color: #29283c; border-bottom: 1px solid #f0eff3; }
+.worklist-reference-table td:not([colspan]):first-child { padding-left: 12px; border-right: 0; }
+.worklist-reference-table td button[aria-label^="Expand"], .worklist-reference-table td button[aria-label^="Collapse"] { font-size: 11px; color: #29283c; }
+.worklist-reference-table td button[aria-label^="Show details"] { display: none; }
+.worklist-reference-table td span.group\/assignee { gap: 3px; }
+.worklist-reference-table td span.group\/assignee > span:first-child { width: 22px; height: 22px; background: #d8f2e7; font-size: 8px; }
+.worklist-reference-table td span.group\/assignee > span[title] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.worklist-reference-table td span.group\/due-date { font-size: 11px; }
+.worklist-reference-table .worklist-priority-badge { gap: 3px; padding: 0 4px; border-radius: 3px; background: #fff2d6; color: #bd934e; font-size: 10px; }
+.worklist-reference-table .worklist-priority-badge[data-priority="Low"] { background: #e4f2fc; color: #5e9bc6; }
+.worklist-reference-table .worklist-priority-badge[data-priority="High"] { background: #ffe5e1; color: #d66b60; }
+.worklist-reference-table .worklist-priority-badge select { padding: 0; min-height: 16px; border-radius: 0; background: transparent; color: inherit; font-size: 10px; }
+.worklist-reference-table tr:has([role="checkbox"][data-state="checked"]) > td:not([colspan]) { background: #f0edff; }
+@media (max-width: 767px) {
+    .worklist-main > .worklist-page { padding: 20px 16px; }
+    .worklist-page > header select { font-size: 24px; }
+    .worklist-page [aria-label="Worklist views and actions"] { padding-bottom: 10px; }
+}
+.worklist-reference-table .worklist-type-badge { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; border: 1px solid #e6d9f3; border-radius: 3px; background: #f3eafa; padding: 1px 4px; color: #a176be; font-size: 10px; vertical-align: middle; }
+/* Keep the centered filter dialog lighter than destructive/full-screen dialogs. */
+body:has(.worklist-filter-panel) [data-state="open"][class*="bg-black/80"] {
+    background-color: rgb(30 25 43 / 28%);
+    backdrop-filter: blur(2px);
+}

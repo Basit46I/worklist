@@ -62,13 +62,13 @@ export const WorklistShell = ({ activeRoute, children, onSignOut, signOutBusy, u
     </div>
 
     return <div className={`worklist-app min-h-screen bg-[#f7f8f4] text-[#26362d] lg:grid ${sidebarCollapsed ? 'lg:grid-cols-[80px_minmax(0,1fr)]' : 'lg:grid-cols-[232px_minmax(0,1fr)]'}`}>
-        <aside aria-label="Workspace navigation" className={`sticky top-0 hidden h-screen min-h-[520px] flex-col bg-[#174638] py-5 text-white transition-[width,padding] duration-200 lg:flex ${sidebarCollapsed ? 'items-center px-3' : 'px-[18px]'}`}>
-            <div className={`mb-8 flex w-full items-center ${sidebarCollapsed ? 'justify-center' : 'px-1'}`}>
+        <aside aria-label="Workspace navigation" className={`worklist-sidebar sticky top-0 hidden h-screen min-h-[520px] flex-col bg-[#174638] py-5 text-white transition-[width,padding] duration-200 lg:flex ${sidebarCollapsed ? 'items-center px-3' : 'px-[18px]'}`}>
+            <div className={`worklist-brand mb-8 flex w-full items-center ${sidebarCollapsed ? 'justify-center' : 'px-1'}`}>
                 {renderLink({ className: `flex min-w-0 items-center font-semibold tracking-tight text-white ${sidebarCollapsed ? 'justify-center' : 'gap-2.5'}`, href: '/dashboard', key: 'brand-link', children: <><ListChecks aria-hidden="true" className="size-6 shrink-0" /><span className={sidebarCollapsed ? 'sr-only' : 'text-[21px] tracking-[-.04em]'}>worklist</span></> })}
             </div>
             {!sidebarCollapsed && <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[.12em] text-[#9db8ac]">Workspace</p>}
-            <nav aria-label="Workspace pages" className="grid w-full gap-1">{navLinks()}</nav>
-            <div className="mt-auto w-full border-t border-white/10 pt-4">
+            <nav aria-label="Workspace pages" className="worklist-primary-nav grid w-full gap-1">{navLinks()}</nav>
+            <div className="worklist-account mt-auto w-full border-t border-white/10 pt-4">
                 <div className="relative flex min-h-12 items-center gap-2 rounded-lg bg-white/[.08] p-1.5">
                     <span aria-label={`${user.name} profile`} className="grid size-8 shrink-0 place-items-center rounded-full bg-[#e1eae0] text-[10px] font-semibold text-[#174638]" title={user.name}>{initials(user.name)}</span>
                     {!sidebarCollapsed && <span className="grid min-w-0 flex-1 gap-0.5"><strong className="truncate text-[11px] font-semibold text-white">{user.name}</strong><span className="truncate text-[10px] text-[#b8cbc2]">{user.role}</span></span>}
@@ -79,11 +79,11 @@ export const WorklistShell = ({ activeRoute, children, onSignOut, signOutBusy, u
         </aside>
         <main className="app-content worklist-main min-w-0 pb-20 lg:pb-0">
             <header className="worklist-topbar sticky top-0 z-30 flex h-[68px] items-center justify-between gap-4 border-b border-[#e4e9e2] bg-[#f8f9f5]/95 px-4 backdrop-blur sm:px-8">
-                <div className="flex min-w-0 items-center gap-3">
+                <div className="worklist-breadcrumbs flex min-w-0 items-center gap-3">
                     <button aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} className="hidden size-8 shrink-0 place-items-center rounded-lg text-[#66756b] hover:bg-[#edf1ec] lg:grid" onClick={() => { setSidebarCollapsed((value) => !value) }} title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} type="button">{sidebarCollapsed ? <PanelLeftOpen aria-hidden="true" className="size-[18px]" /> : <PanelLeftClose aria-hidden="true" className="size-[18px]" />}</button>
                     <span className="truncate text-[13px] text-[#718078]">{user.teamName}</span>{projectContext && <><span className="text-xs text-[#adb7ae]">/</span><span className="truncate text-[13px] text-[#718078]">{projectContext.spaceName}</span>{projectContext.folderName && <><span className="text-xs text-[#adb7ae]">/</span><span className="truncate text-[13px] text-[#718078]">{projectContext.folderName}</span></>}<span className="text-xs text-[#adb7ae]">/</span><span className="truncate text-[13px] font-medium text-[#25382e]">{projectContext.listName}</span></>}
                 </div>
-                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                <div className="worklist-topbar-actions flex shrink-0 items-center gap-1 sm:gap-2">
                     <button aria-label="Focus task search" className="grid size-8 place-items-center rounded-lg text-[#748178] hover:bg-[#edf1ec]" onClick={() => document.querySelector<HTMLInputElement>('input[aria-label="Search tasks"]')?.focus()} type="button"><Search aria-hidden="true" className="size-[17px]" /></button>
                     <button aria-label="Notifications" className="grid size-8 place-items-center rounded-lg text-[#748178] hover:bg-[#edf1ec]" type="button"><Bell aria-hidden="true" className="size-[17px]" /></button>
                     <button aria-expanded={accountOpen} aria-haspopup="menu" aria-label="Open account menu" className="relative ml-1 grid size-8 place-items-center rounded-full bg-[#e7eee6] text-[10px] font-semibold text-[#355844]" onClick={() => { setAccountOpen((open) => !open) }} type="button">{initials(user.name)}</button>
@@ -92,6 +92,6 @@ export const WorklistShell = ({ activeRoute, children, onSignOut, signOutBusy, u
             </header>
             {children}
         </main>
-        <nav aria-label="Workspace pages" className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-1 border-t border-[#e8ebe5] bg-white/95 px-3 py-2 pb-[max(.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-20px_rgba(23,33,28,.3)] backdrop-blur lg:hidden">{navLinks(true)}<div className="relative flex flex-1 justify-center"><button aria-expanded={accountOpen} aria-haspopup="menu" className={`flex min-h-12 min-w-16 flex-col items-center justify-center gap-1 rounded-xl text-[11px] ${accountOpen ? 'bg-[#fff0e9] font-semibold text-[#df7548]' : 'text-[#78857d]'}`} onClick={() => { setAccountOpen((open) => !open) }} type="button"><span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#f5d9c8] text-[8px] font-semibold text-[#8d4c30]">{initials(user.name)}</span><span>Account</span></button>{accountMenu}</div></nav>
+        <nav aria-label="Workspace pages" className="worklist-mobile-nav fixed inset-x-0 bottom-0 z-40 flex items-center gap-1 border-t border-[#e8ebe5] bg-white/95 px-3 py-2 pb-[max(.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_-20px_rgba(23,33,28,.3)] backdrop-blur lg:hidden">{navLinks(true)}<div className="relative flex flex-1 justify-center"><button aria-expanded={accountOpen} aria-haspopup="menu" className={`flex min-h-12 min-w-16 flex-col items-center justify-center gap-1 rounded-xl text-[11px] ${accountOpen ? 'bg-[#fff0e9] font-semibold text-[#df7548]' : 'text-[#78857d]'}`} onClick={() => { setAccountOpen((open) => !open) }} type="button"><span aria-hidden="true" className="grid size-5 place-items-center rounded-full bg-[#f5d9c8] text-[8px] font-semibold text-[#8d4c30]">{initials(user.name)}</span><span>Account</span></button>{accountMenu}</div></nav>
     </div>
 }

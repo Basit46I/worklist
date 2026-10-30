@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, type ReactElement } from 'react'
-import { Archive, Check, ChevronDown, Copy, Pencil, RotateCcw, Square, Trash2, X } from 'lucide-react'
-import { Button, Checkbox, Input, TableCell, TableRow } from '@workspace/ui/primitives'
+import { Archive, Check, ChevronDown, Copy, MoreHorizontal, Pencil, RotateCcw, Square, Trash2, X } from 'lucide-react'
+import { Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, TableCell, TableRow } from '@workspace/ui/primitives'
 import type {
     WorkItem,
     WorkItemColumn,
@@ -175,23 +175,18 @@ export const WorkItemRow = ({
                 )}
                 <WorkItemExpandedDetails activityClient={activityClient} approvalClient={approvalClient} availableItems={availableItems} canEdit={canEdit} commentClient={commentClient} commentRefreshItemId={commentRefreshItemId} commentRefreshSequence={commentRefreshSequence} expanded={expanded} item={item} lists={lists} onCreateSubtask={onCreateSubtask} onUpdate={onUpdate} />
             </TableCell>
+            <TableCell className="worklist-description-cell"><span className="line-clamp-2 whitespace-normal">{item.description || '-'}</span></TableCell>
             <WorkItemFieldCells canEdit={canEdit} columnWidths={columnWidths} columns={columns} item={item} onUpdate={onUpdate} statuses={statuses} />
-            <TableCell className="w-28 pr-3">
-                {canEdit && (
-                    <span className={`flex justify-end gap-1 ${item.archivedAt ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 focus-within:opacity-100'}`}>
-                        {item.archivedAt ? <Button aria-label={`Restore ${item.title}`} className="h-8 gap-1 rounded-md px-2 text-[11px] font-semibold text-[#245d43] hover:bg-[#eaf3ec] hover:text-[#174638]" onClick={() => { onToggleArchived(item.id, false) }} title="Restore task" type="button" variant="ghost"><RotateCcw aria-hidden="true" className="size-3.5" />Restore</Button> : <>
-                            <Button aria-label={`Duplicate ${item.title}`} className="size-8 text-slate-400 hover:text-slate-700" onClick={() => { onDuplicate(item.id) }} size="icon" type="button" variant="ghost">
-                                <Copy aria-hidden="true" className="size-4" />
-                            </Button>
-                            <Button aria-label={`Archive ${item.title}`} className="size-8 text-slate-400 hover:text-[#245d43]" onClick={() => { onToggleArchived(item.id, true) }} size="icon" type="button" variant="ghost">
-                                <Archive aria-hidden="true" className="size-4" />
-                            </Button>
-                            <Button aria-label={`Delete ${item.title}`} className="size-8 text-slate-400 hover:text-rose-600" onClick={() => { onDelete(item.id) }} size="icon" type="button" variant="ghost">
-                                <Trash2 aria-hidden="true" className="size-4" />
-                            </Button>
-                        </>}
-                    </span>
-                )}
+            <TableCell className="w-8 px-1">
+                {canEdit && item.archivedAt ? <Button aria-label={`Restore ${item.title}`} className="h-7 px-1 text-[10px]" onClick={() => { onToggleArchived(item.id, false) }} variant="ghost"><RotateCcw aria-hidden="true" className="size-3" />Restore</Button> : canEdit && <DropdownMenu>
+                    <DropdownMenuTrigger asChild><Button aria-label={`Actions for ${item.title}`} className="size-7 text-slate-400" size="icon" variant="ghost"><MoreHorizontal aria-hidden="true" className="size-3.5" /></Button></DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onSelect={() => { setIsEditing(true) }}><Pencil />Edit task</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => { onDuplicate(item.id) }}><Copy />Duplicate</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => { onToggleArchived(item.id, !item.archivedAt) }}>{item.archivedAt ? <RotateCcw /> : <Archive />}{item.archivedAt ? 'Restore' : 'Archive'}</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => { onDelete(item.id) }}><Trash2 />Delete</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>}
             </TableCell>
         </TableRow>
     )

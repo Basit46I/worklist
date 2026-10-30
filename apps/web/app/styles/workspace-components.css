@@ -1,0 +1,243 @@
+.worklist-main [aria-label="List controls"] {
+    align-items: flex-start;
+    padding: 14px 16px;
+    border-color: #e2e9e1;
+    border-radius: 0 0 14px 14px;
+    background: #fff;
+}
+
+.worklist-main [aria-label="List controls"] input {
+    min-height: 40px;
+}
+
+.worklist-main [aria-label="Project tasks"],
+.worklist-main [aria-label="Tasks board"] {
+    border-color: #e1e8e0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 26px -26px rgb(22 57 40 / 45%);
+}
+
+.worklist-main [aria-label="Project tasks"] thead th {
+    height: 48px;
+    border-bottom: 1px solid #e8eee7;
+    background: #f7f9f6;
+    color: #748278;
+    font-size: 10px;
+    letter-spacing: .12em;
+}
+
+.worklist-main [aria-label="Project tasks"] tbody tr:hover {
+    background: #f7faf6;
+}
+
+.worklist-main [aria-label="Tasks board"] > section {
+    border-color: #e2e9e1;
+    border-radius: 15px;
+    background: #f7f9f6;
+    padding: 14px;
+}
+
+.worklist-main [aria-label="Tasks board"] > section > div:first-child h2 {
+    color: #294436;
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.worklist-main [aria-label="Tasks board"] article {
+    border-color: #e6ebe4;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px -12px rgb(21 54 39 / 35%);
+}
+
+.dashboard-page-heading {
+    min-height: 126px;
+    margin-bottom: 22px;
+}
+
+.dashboard-page [aria-label="Workspace summary"] > article,
+.dashboard-page [aria-label="Workspace lists"] article,
+.dashboard-page [aria-label="Workspace reports"] article,
+.dashboard-page [aria-label="Upcoming tasks"],
+.dashboard-page [aria-label="Task status distribution"],
+.dashboard-page [aria-label="Open tasks by assignee"],
+.dashboard-page [aria-label="Needs attention"] {
+    border-color: #e3eae2;
+    border-radius: 15px;
+    background-color: #fff;
+    box-shadow: 0 10px 28px -28px rgb(21 55 39 / 45%);
+}
+
+.dashboard-page [aria-label="Workspace summary"] > article {
+    min-height: 128px;
+    padding: 21px;
+}
+
+.dashboard-page [aria-label="Workspace summary"] > article strong {
+    font-size: 29px;
+    line-height: 1.1;
+    letter-spacing: -.045em;
+}
+
+.dashboard-page [aria-label="Workspace summary"] > article > span:first-child {
+    border-radius: 12px;
+}
+
+.dashboard-page [aria-label="Workspace lists"] article:hover,
+.dashboard-page [aria-label="Upcoming tasks"] li:hover {
+    background-color: #fafcf9;
+}
+
+.dashboard-page [aria-label="Workspace reports"] {
+    margin-top: 22px;
+}
+
+.calendar-page > header,
+.calendar-page > section > header {
+    border-color: #e0e8df;
+    border-radius: 17px;
+    background: linear-gradient(110deg, #fff 0%, #fff 76%, #f2f6ef 100%);
+    box-shadow: 0 10px 26px -26px rgb(22 57 40 / 45%);
+}
+
+.worklist-main [aria-label="calendar task timeline"] > header {
+    gap: 14px;
+    border-color: #e2e9e1;
+    border-radius: 15px;
+    background: #fff;
+    padding: 14px;
+}
+
+.worklist-main [aria-label="calendar task timeline"] > header button,
+.worklist-main [aria-label="calendar task timeline"] > header select {
+    border-radius: 9px;
+}
+
+.worklist-main [aria-label="Month calendar"] {
+    border-color: #e1e8e0;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 10px 28px -28px rgb(21 55 39 / 45%);
+}
+
+.worklist-main [aria-label="Month calendar"] > div:first-child {
+    min-height: 42px;
+    background: #f6f9f5;
+}
+
+.worklist-main [aria-label="Month calendar"] [data-calendar-week] > div[aria-label^="Calendar day"] {
+    min-height: 56px;
+}
+
+.worklist-main [aria-label="calendar task timeline"] label select {
+    min-height: 38px;
+    border-radius: 9px;
+}
+
+.worklist-mobile-nav {
+    border-color: #e1e8e0;
+    background: rgb(250 251 248 / 96%);
+}
+
+.worklist-mobile-nav a[aria-current="page"] {
+    background: #e6efe3;
+    color: #1b4a38;
+}
+
+.worklist-auth {
+    background:
+        radial-gradient(ellipse at 5% 10%, rgb(203 222 194 / 46%), transparent 34rem),
+        #eef2ec;
+}
+
+.worklist-auth > section {
+    border-color: #e0e8df;
+    background: #fffefa;
+    box-shadow: 0 26px 70px -50px rgb(15 49 36 / 32%);
+}
+
+.worklist-auth .auth-submit,
+.worklist-auth-action .auth-action-submit {
+    min-height: 50px;
+    border-radius: 10px;
+    background: #1c5940;
+    letter-spacing: .005em;
+}
+
+.worklist-auth .auth-submit:hover,
+.worklist-auth-action .auth-action-submit:hover {
+    background: #144a35;
+}
+
+.worklist-auth .auth-brand,
+.worklist-auth-action .auth-action-panel > aside {
+    position: relative;
+    background:
+        radial-gradient(ellipse at 76% 27%, rgb(153 196 138 / 17%), transparent 35%),
+        linear-gradient(150deg, #173f34 0%, #12382e 55%, #0e3028 100%);
+}
+
+.worklist-auth .auth-brand::after,
+.worklist-auth-action .auth-action-panel > aside::after {
+    position: absolute;
+    right: -130px;
+    bottom: -170px;
+    width: 420px;
+    height: 420px;
+    border: 1px solid rgb(217 239 207 / 11%);
+    border-radius: 50%;
+    box-shadow: 0 0 0 28px rgb(217 239 207 / 2%), 0 0 0 74px rgb(217 239 207 / 2%);
+    content: '';
+    pointer-events: none;
+}
+
+.worklist-auth-action > section {
+    border-color: #e0e8df;
+    border-radius: 22px;
+    box-shadow: 0 26px 70px -50px rgb(15 49 36 / 32%);
+}
+
+.worklist-client-portal {
+    background:
+        radial-gradient(ellipse at 8% 8%, rgb(204 222 195 / 42%), transparent 30rem),
+        #f1f4ef;
+}
+
+.worklist-client-portal > section {
+    border-color: #e0e8df;
+    border-radius: 19px;
+    box-shadow: 0 26px 64px -50px rgb(17 53 37 / 36%);
+}
+
+.worklist-client-portal h1 {
+    letter-spacing: -.045em;
+}
+
+@media (max-width: 720px) {
+    .worklist-page,
+    .dashboard-page,
+    .calendar-page {
+        padding-inline: 14px;
+        padding-top: 20px;
+    }
+
+    .worklist-page-heading,
+    .dashboard-page-heading {
+        border-radius: 15px;
+        padding: 18px;
+    }
+
+    .worklist-main [aria-label="List controls"] {
+        padding: 12px;
+    }
+
+    .dashboard-page [aria-label="Workspace summary"] > article {
+        min-height: 106px;
+        padding: 15px;
+    }
+
+    .worklist-main [aria-label="calendar task timeline"] > header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+}

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, type PointerEvent as ReactPointerEvent, type ReactElement } from 'react'
-import { ArrowDown, ArrowDownUp, ArrowUp } from 'lucide-react'
+import { Fragment, useRef, type PointerEvent as ReactPointerEvent, type ReactElement } from 'react'
+import { ArrowDown, ArrowDownUp, ArrowUp, Text, CircleDot } from 'lucide-react'
 import { Checkbox, TableHead, TableRow } from '@workspace/ui/primitives'
 import type { WorkItemColumn, WorkItemColumnWidths, WorkItemSortField } from '../model/index.js'
 import { columnLabels, maxBulkSelection } from './worklist-presentation.js'
@@ -56,8 +56,9 @@ export const WorklistTableHeader = ({
         /></TableHead>
         <TableHead className="min-w-64 bg-[#f1f4ee]"><button
             className="group/sort flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.08em] text-[#728077] hover:text-[#263329] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8aa37c]"
-            onClick={() => { onSort('title') }} type="button">Task / subtasks{' '}<SortIcon direction={direction} field="title" sortField={sortField} /></button></TableHead>
-        {columns.map((column) => <TableHead
+            onClick={() => { onSort('title') }} type="button"><CircleDot aria-hidden="true" className="size-3" />Task Name{' '}<SortIcon direction={direction} field="title" sortField={sortField} /></button></TableHead>
+        <TableHead><span className="flex items-center gap-2"><Text aria-hidden="true" className="size-3" />Description</span></TableHead>
+        {columns.map((column) => <Fragment key={column}><TableHead
             className={`relative bg-[#f1f4ee] ${column === 'dueDate' ? 'pr-6' : ''}`}
             draggable key={column}
             onDragOver={(event) => { event.preventDefault() }}
@@ -66,14 +67,14 @@ export const WorklistTableHeader = ({
             <div className="flex items-center justify-between gap-2 pr-2"><button
                 className="group/sort flex min-w-0 items-center gap-1.5 truncate text-[10px] font-medium uppercase tracking-[0.08em] text-[#728077] hover:text-[#263329] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8aa37c]"
                 draggable onClick={() => { onSort(column) }} onDragStart={(event) => { event.dataTransfer.setData('text/worklist-column', column) }} type="button">
-                {columnLabels[column]}{' '}<SortIcon direction={direction} field={column} sortField={sortField} />
+                {column === 'dueDate' ? 'Estimation' : column === 'assignee' ? 'People' : columnLabels[column]}{' '}<SortIcon direction={direction} field={column} sortField={sortField} />
             </button><span
                 aria-label={`Resize ${columnLabels[column]} column`} aria-orientation="vertical" aria-valuemax={480} aria-valuemin={100} aria-valuenow={columnWidths[column]}
                 className="absolute right-0 top-1/2 z-10 h-7 w-2 -translate-y-1/2 touch-none cursor-col-resize rounded-sm hover:bg-emerald-300 focus-visible:bg-emerald-400 focus-visible:outline-none"
                 onKeyDown={(event) => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); onResizeColumn(column, Math.max(100, Math.min(480, columnWidths[column] + (event.key === 'ArrowRight' ? 10 : -10)))) } }}
                 onPointerDown={(event) => { startResize(event, column) }} onPointerMove={moveResize} onPointerUp={finishResize} onPointerCancel={finishResize} role="separator" tabIndex={0}
             /></div>
-        </TableHead>)}
+        </TableHead>{column === 'dueDate' && <TableHead>Type</TableHead>}</Fragment>)}
         <TableHead className="w-10 bg-[#f1f4ee]" />
     </TableRow>
 }

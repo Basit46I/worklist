@@ -30,7 +30,7 @@ const listFilterSchema = z
     )
 const cursorPayloadSchema = z
     .object({
-        value: z.union([z.string().max(200), z.iso.date()]),
+        value: z.union([z.string().max(254), z.iso.date()]),
         id: z.string().regex(/^[a-f\d]{24}$/i),
         field: z.enum(['title', 'status', 'priority', 'assignee', 'dueDate']),
         direction: z.enum(['asc', 'desc'])
@@ -108,7 +108,7 @@ export const createWorkItemSchema = z
         description: z.string().trim().max(2000).default(''),
         status: status.default('To do'),
         priority: priority.default('Medium'),
-        assignee: z.string().trim().max(120).default('Unassigned'),
+        assignee: z.string().trim().max(254).default('Unassigned'),
         startDate: dateOnly.optional(),
         dueDate: dateOnly,
         checklist: checklist.default([]),
@@ -147,7 +147,7 @@ export const bulkUpdateWorkItemsSchema = z
                     .regex(/^[a-f\d]{24}$/i)
                     .optional(),
                 priority: priority.optional(),
-                assignee: z.string().trim().min(1).max(120).optional(),
+                assignee: z.string().trim().min(1).max(254).optional(),
                 dueDate: dateOnly.optional()
             })
             .strict()

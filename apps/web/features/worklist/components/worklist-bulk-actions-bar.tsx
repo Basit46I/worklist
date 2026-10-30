@@ -104,9 +104,9 @@ export const WorklistBulkActionsBar = ({ state, activeStatuses, visibleSelectedI
 
             <Dialog onOpenChange={setAssigneeOpen} open={assigneeOpen}>
                 <DialogContent className="rounded-xl border-[#dfe7df] sm:max-w-sm">
-                    <DialogHeader><DialogTitle>Assign selected tasks</DialogTitle><DialogDescription>Enter a teammate’s name, or leave this blank to mark the tasks unassigned.</DialogDescription></DialogHeader>
+                    <DialogHeader><DialogTitle>Assign selected tasks</DialogTitle><DialogDescription>Enter an email address. New people receive a workspace invitation from the owner. Leave blank to unassign.</DialogDescription></DialogHeader>
                     <form className="grid gap-4" onSubmit={submitAssignee}>
-                        <Input autoFocus aria-label="Assignee name" maxLength={120} onChange={(event) => setAssignee(event.target.value)} placeholder="Name" value={assignee} />
+                        <Input autoFocus aria-label="Assignee email" type="email" maxLength={254} onChange={(event) => setAssignee(event.target.value)} placeholder="teammate@example.com" value={assignee} />
                         <DialogFooter><Button className="bg-[#174638] text-white hover:bg-[#123b30]" type="submit">Apply assignment</Button></DialogFooter>
                     </form>
                 </DialogContent>

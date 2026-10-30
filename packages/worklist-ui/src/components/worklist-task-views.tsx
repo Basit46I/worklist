@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useRef, useState, type ReactElement } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { Fragment, useMemo, useRef, useState, type ReactElement } from 'react'
+import { ChevronDown, Plus } from 'lucide-react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@workspace/ui/primitives'
 import {
@@ -45,6 +45,7 @@ const WorklistTable = ({
     onToggleArchived,
     onUpdate,
     onCreateSubtask,
+    onAddTask,
     sortField,
     direction
 }: Readonly<{
@@ -70,6 +71,7 @@ const WorklistTable = ({
     onDuplicate: (itemId: string) => void
     onToggleArchived: (itemId: string, archived: boolean) => void
     onUpdate: (itemId: string, changes: Partial<WorkItem>) => void
+    onAddTask?: (group: string) => void
     onCreateSubtask: (parentId: string, title: string) => void
     sortField: SortField
     direction: 'asc' | 'desc'
@@ -93,7 +95,7 @@ const WorklistTable = ({
         count: rows.length,
         getScrollElement: () => scrollElement.current,
         getItemKey: (index) => rows[index]?.key ?? index,
-        estimateSize: () => 64,
+        estimateSize: (index) => rows[index]?.type === 'group' ? 92 : 40,
         overscan: 10,
         useFlushSync: false
     })
@@ -102,32 +104,17 @@ const WorklistTable = ({
     const lastVirtualRow = virtualRows.at(-1)
     return (
         <div
-            className="overflow-auto rounded-xl border border-[#d9e1d6] bg-white"
+            className="worklist-reference-table overflow-auto bg-white"
             ref={scrollElement}
             style={{ maxHeight: 'min(70vh, 720px)', minHeight: Math.min(320, Math.max(152, virtualizer.getTotalSize() + 56)) }}>
-            <Table className="min-w-full table-fixed">
-                <TableHeader className="sticky top-0 z-20 bg-[#f1f4ee]">
-                    <WorklistTableHeader
-                        bulkEligibleIds={bulkEligibleIds}
-                        canEdit={canEdit}
-                        columns={columns}
-                        columnWidths={columnWidths}
-                        direction={direction}
-                        eligibleSelectedCount={eligibleSelectedCount}
-                        onReorderColumns={onReorderColumns}
-                        onResizeColumn={onResizeColumn}
-                        onSelectLoaded={onSelectLoaded}
-                        onSort={onSort}
-                        sortField={sortField}
-                    />
-                </TableHeader>
+            <Table className="min-w-full table-fixed"><colgroup><col style={{ width: 36 }} /><col style={{ width: 170 }} /><col style={{ width: 208 }} />{columns.map((column) => <Fragment key={column}><col style={{ width: columnWidths[column] }} />{column === 'dueDate' && <col style={{ width: 94 }} />}</Fragment>)}<col style={{ width: 32 }} /></colgroup>
                 <TableBody>
                     {firstVirtualRow && firstVirtualRow.start > 0 && (
                         <TableRow
                             aria-hidden="true"
                             className="border-0 hover:bg-transparent">
                             <TableCell
-                                colSpan={columns.length + 3}
+                                colSpan={columns.length + 4 + (columns.includes('dueDate') ? 1 : 0)}
                                 style={{ height: firstVirtualRow.start, padding: 0 }}
                             />
                         </TableRow>
@@ -138,14 +125,14 @@ const WorklistTable = ({
                         if (row.type === 'group')
                             return (
                                 <TableRow
-                                    className="border-b border-[#dde4da] bg-[#eaefe5] hover:bg-[#eaefe5]"
+                                    className="worklist-status-group border-0 hover:bg-transparent"
                                     data-index={virtualRow.index}
                                     key={virtualRow.key}
                                     ref={virtualizer.measureElement}>
                                     <TableCell
-                                        className="py-2"
-                                        colSpan={columns.length + 3}>
-                                        <div className="flex items-center gap-2 px-2">
+                                        className="p-0 pt-5"
+                                        colSpan={columns.length + 4 + (columns.includes('dueDate') ? 1 : 0)}>
+                                        <div className="flex h-8 items-center gap-2 rounded-md bg-[#f5f5f9] px-3">
                                             <button
                                                 aria-expanded={!collapsedGroups.has(row.title)}
                                                 aria-label={`${collapsedGroups.has(row.title) ? 'Expand' : 'Collapse'} ${row.title} group`}
@@ -163,11 +150,12 @@ const WorklistTable = ({
                                                     aria-hidden="true"
                                                     className={`size-3.5 text-[#6f7e75] transition-transform ${collapsedGroups.has(row.title) ? '-rotate-90' : ''}`}
                                                 />
-                                                <span className="text-[13px] font-semibold text-[#2c4137]">{row.title}</span>
-                                                <span className="text-[11px] font-medium text-[#7a887f]">{row.count}</span>
+                                                <span aria-hidden="true" className="h-4 w-1 rounded-full " style={{ background: /progress/i.test(row.title) ? '#81b6f3' : /review/i.test(row.title) ? '#e8be69' : '#b7b6c2' }} /><span className="text-[13px] font-semibold text-[#29283c]">{row.title}</span>
+                                                <span className="rounded bg-[#eeecff] px-1 text-[10px] font-medium text-[#8176ce]">{row.count}</span>
                                             </button>
+                                            {canEdit && onAddTask && <button aria-label={`Add task to ${row.title}`} className="ml-auto text-[#85818f]" onClick={() => { onAddTask(row.title) }} type="button"><Plus aria-hidden="true" className="size-3.5" /></button>}
                                         </div>
-                                    </TableCell>
+<Table className="w-full table-fixed"><colgroup><col style={{ width: 36 }} /><col style={{ width: 170 }} /><col style={{ width: 208 }} />{columns.map((column) => <Fragment key={column}><col style={{ width: columnWidths[column] }} />{column === 'dueDate' && <col style={{ width: 94 }} />}</Fragment>)}<col style={{ width: 32 }} /></colgroup><TableHeader><WorklistTableHeader bulkEligibleIds={bulkEligibleIds} canEdit={canEdit} columns={columns} columnWidths={columnWidths} direction={direction} eligibleSelectedCount={eligibleSelectedCount} onReorderColumns={onReorderColumns} onResizeColumn={onResizeColumn} onSelectLoaded={onSelectLoaded} onSort={onSort} sortField={sortField} /></TableHeader></Table>                                    </TableCell>
                                 </TableRow>
                             )
                         return (
@@ -212,7 +200,7 @@ const WorklistTable = ({
                             aria-hidden="true"
                             className="border-0 hover:bg-transparent">
                             <TableCell
-                                colSpan={columns.length + 3}
+                                colSpan={columns.length + 4 + (columns.includes('dueDate') ? 1 : 0)}
                                 style={{ height: virtualizer.getTotalSize() - lastVirtualRow.end, padding: 0 }}
                             />
                         </TableRow>

@@ -6,12 +6,12 @@ export const createWorkItemReminderRepository = () => Object.freeze({
         archivedAt: null,
         status: { $ne: 'Done' },
         dueDate: { $gte: today, $lt: tomorrow },
-        'clientRequest.contactEmail': { $exists: true, $ne: '' },
+        $and: [{ $or: [{ 'clientRequest.contactEmail': { $exists: true, $ne: '' } }, { assigneeEmail: { $exists: true, $ne: '' } }] }],
         $or: [{ dueReminderSentFor: null }, { dueReminderSentFor: { $ne: today.toISOString().slice(0, 10) } }]
     }).select('+dueReminderSentFor').limit(200).lean().exec(),
-    findAssigneeEmail: async (teamId: string, assignee: string) => {
+    findAssigneeEmail: async (teamId: string, assignee: string, assigneeEmail?: string) => {
         if (!assignee || assignee === 'Unassigned') return null
-        const user = await AuthUserModel.findOne({ teamId, name: assignee }).select({ email: 1 }).lean().exec()
+        const user = await AuthUserModel.findOne({ teamId, ...(assigneeEmail ? { email: assigneeEmail } : { name: assignee }) }).select({ email: 1 }).lean().exec()
         return user?.email ?? null
     },
     claimDue: async (itemId: string, dueDate: string) => (await WorkItemModel.updateOne({ _id: itemId, $or: [{ dueReminderClaimedFor: null }, { dueReminderClaimedFor: { $ne: dueDate } }] }, { $set: { dueReminderClaimedFor: dueDate } }).exec()).modifiedCount === 1,

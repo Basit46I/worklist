@@ -110,7 +110,7 @@ void test("Worklist API persists an owner's item and enforces team isolation", {
             description: 'Saved through HTTP',
             status: 'To do',
             priority: 'High',
-            assignee: 'Test Owner',
+            assignee: 'Unassigned',
             dueDate: '2026-12-31'
         })
     })

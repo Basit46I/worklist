@@ -50,6 +50,7 @@ export const createWorkItemQueryRepository = () => Object.freeze({
                     status: firstStatus,
                     priority: source.priority,
                     assignee: source.assignee,
+                    assigneeEmail: source.assigneeEmail ?? '',
                     dueDate: nextDate,
                     startDate: source.startDate ?? source.dueDate,
                     checklist: (source.checklist ?? []).map((entry) => ({ ...entry, completed: false })),
@@ -100,6 +101,7 @@ export const createWorkItemQueryRepository = () => Object.freeze({
                     { status: searchExpression },
                     { priority: searchExpression },
                     { assignee: searchExpression },
+                    { assigneeEmail: searchExpression },
                     { tags: searchExpression }
                 ]
                 const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(query.search) ? new Date(`${query.search}T00:00:00.000Z`) : null

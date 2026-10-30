@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, type ReactElement } from 'react'
+import { Fragment, useState, type ReactElement } from 'react'
 import { Check, Pencil, X } from 'lucide-react'
-import { Button, Input, TableCell } from '@workspace/ui/primitives'
+import { Button, Input, Popover, PopoverContent, PopoverTrigger, TableCell } from '@workspace/ui/primitives'
 import type { WorkItem, WorkItemColumn, WorkItemColumnWidths, WorkItemPriority } from '../model/index.js'
 import { formatDate, initialsOf, isOverdue, statusDotStyle, statusStyle } from './worklist-presentation.js'
 
@@ -23,11 +23,11 @@ type WorkItemFieldCellsProps = Readonly<{
 
 export const WorkItemFieldCells = ({ item, columns, columnWidths, statuses, canEdit, onUpdate }: WorkItemFieldCellsProps): ReactElement => {
     const [isEditingAssignee, setIsEditingAssignee] = useState(false)
-    const [draftAssignee, setDraftAssignee] = useState(item.assignee)
+    const [draftAssignee, setDraftAssignee] = useState(item.assigneeEmail ?? '')
     const [isEditingDueDate, setIsEditingDueDate] = useState(false)
     const [draftDueDate, setDraftDueDate] = useState(item.dueDate)
     return (
-        <>{columns.map((column) => (
+        <>{columns.map((column) => (<Fragment key={column}>
                 <TableCell
                     className={`py-3.5 ${column === 'dueDate' ? 'pr-6' : ''}`}
                     key={column}
@@ -54,7 +54,7 @@ export const WorkItemFieldCells = ({ item, columns, columnWidths, statuses, canE
                             </select>
                         </label>
                     ) : column === 'priority' ? (
-                        <label className="inline-flex items-center">
+                        <label className="worklist-priority-badge inline-flex items-center" data-priority={item.priority}><span aria-hidden="true">•</span>
                             <span className="sr-only">Priority for {item.title}</span>
                             <select
                                 aria-label={`Priority for ${item.title}`}
@@ -74,72 +74,21 @@ export const WorkItemFieldCells = ({ item, columns, columnWidths, statuses, canE
                             </select>
                         </label>
                     ) : column === 'assignee' ? (
-                        isEditingAssignee ? (
-                            <form
-                                className="flex min-w-36 items-center gap-1"
-                                onSubmit={(event) => {
-                                    event.preventDefault()
-                                    const assignee = draftAssignee.trim() || 'Unassigned'
-                                    onUpdate(item.id, { assignee })
-                                    setDraftAssignee(assignee)
-                                    setIsEditingAssignee(false)
-                                }}>
-                                <Input
-                                    aria-label={`Edit assignee for ${item.title}`}
-                                    autoFocus
-                                    className="h-8 min-w-20"
-                                    maxLength={120}
-                                    onChange={(event) => {
-                                        setDraftAssignee(event.target.value)
-                                    }}
-                                    value={draftAssignee}
-                                />
-                                <Button
-                                    aria-label="Save assignee"
-                                    className="size-7"
-                                    size="icon"
-                                    type="submit"
-                                    variant="ghost">
-                                    <Check aria-hidden="true" />
-                                </Button>
-                                <Button
-                                    aria-label="Cancel assignee edit"
-                                    className="size-7"
-                                    onClick={() => {
-                                        setDraftAssignee(item.assignee)
-                                        setIsEditingAssignee(false)
-                                    }}
-                                    size="icon"
-                                    type="button"
-                                    variant="ghost">
-                                    <X aria-hidden="true" />
-                                </Button>
-                            </form>
-                        ) : (
-                            <span className="group/assignee flex items-center gap-2 text-[13px] text-[#34463b]">
-                                <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#e3ece1] text-[10px] font-semibold text-[#2f5a45]">
-                                    {item.assignee === 'Unassigned' ? '—' : initialsOf(item.assignee)}
-                                </span>
-                                <span className="truncate" title={item.assignee}>{item.assignee.split(' ')[0]}</span>
-                                {canEdit && (
-                                    <Button
-                                        aria-label={`Edit assignee for ${item.title}`}
-                                        className="size-6 shrink-0 opacity-0 group-hover/assignee:opacity-100 focus-visible:opacity-100"
-                                        onClick={() => {
-                                            setDraftAssignee(item.assignee)
-                                            setIsEditingAssignee(true)
-                                        }}
-                                        size="icon"
-                                        type="button"
-                                        variant="ghost">
-                                        <Pencil
-                                            aria-hidden="true"
-                                            className="size-3"
-                                        />
-                                    </Button>
-                                )}
-                            </span>
-                        )
+                        <Popover open={isEditingAssignee} onOpenChange={(open) => { setIsEditingAssignee(open); if (open) setDraftAssignee(item.assigneeEmail ?? '') }}>
+                            <PopoverTrigger asChild>
+                                <button aria-label={`Assign ${item.title} by email`} className="worklist-assignee flex max-w-full items-center gap-2 rounded-md text-left" disabled={!canEdit} title={item.assigneeEmail || item.assignee} type="button">
+                                    <span aria-hidden="true" className="grid size-7 shrink-0 place-items-center rounded-full bg-[#dff2e8] text-[10px] font-semibold text-[#376b53]">{item.assignee === 'Unassigned' ? '+' : initialsOf(item.assigneePending ? item.assignee.split('@')[0] ?? item.assignee : item.assignee)}</span>
+                                    <span className="min-w-0"><span className="block truncate text-[11px] text-[#34463b]">{item.assignee === 'Unassigned' ? 'Assign by email' : item.assignee}</span>{item.assigneePending && <span className="block text-[9px] text-[#8b948d]">Invitation pending</span>}</span>
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent align="start" className="w-80 rounded-xl p-4">
+                                <form className="grid gap-3" onSubmit={(event) => { event.preventDefault(); onUpdate(item.id, { assignee: draftAssignee.trim().toLowerCase() || 'Unassigned' }); setIsEditingAssignee(false) }}>
+                                    <label className="grid gap-2 text-xs font-medium">Assign by email<Input aria-label={`Assignee email for ${item.title}`} autoFocus autoComplete="email" maxLength={254} onChange={(event) => { setDraftAssignee(event.target.value) }} placeholder="teammate@example.com" type="email" value={draftAssignee} /></label>
+                                    <p className="text-xs leading-5 text-slate-500">We’ll email this person. New people receive a workspace invitation from the owner. Leave blank to unassign.</p>
+                                    <div className="flex justify-end gap-2"><Button onClick={() => { setIsEditingAssignee(false) }} type="button" variant="ghost">Cancel</Button><Button type="submit">{draftAssignee.trim() ? 'Assign & send' : 'Unassign'}</Button></div>
+                                </form>
+                            </PopoverContent>
+                        </Popover>
                     ) : isEditingDueDate ? (
                         <form
                             className="flex min-w-36 items-center gap-1"
@@ -182,7 +131,7 @@ export const WorkItemFieldCells = ({ item, columns, columnWidths, statuses, canE
                         </form>
                     ) : (
                         <span className="group/due-date flex items-center gap-1 text-[13px] text-[#4d5f54]">
-                            <span className={isOverdue(item.dueDate, item.status) ? 'text-[#b4503d]' : ''}>{formatDate(item.dueDate)}</span>
+                            <span className={isOverdue(item.dueDate, item.status) ? 'text-[#b4503d]' : ''}>{item.startDate ? `${formatDate(item.startDate)} - ` : ''}{formatDate(item.dueDate)}</span>
                             {canEdit && (
                                 <Button
                                     aria-label={`Edit due date for ${item.title}`}
@@ -203,7 +152,8 @@ export const WorkItemFieldCells = ({ item, columns, columnWidths, statuses, canE
                         </span>
                     )}
                 </TableCell>
-            ))}
+                {column === 'dueDate' && <TableCell className="worklist-type-cell">{item.tags?.length ? <span className="worklist-type-badge" title={item.tags.join(', ')}>{item.tags[0]}</span> : '-'}</TableCell>}
+            </Fragment>))}
         </>
     )
 }

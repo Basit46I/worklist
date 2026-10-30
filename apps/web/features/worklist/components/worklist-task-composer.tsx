@@ -16,6 +16,7 @@ type WorklistTaskComposerProps = Readonly<{
 }>
 
 export const WorklistTaskComposer = ({ state, createItem, activeStatuses, user }: WorklistTaskComposerProps): ReactElement => {
+    const [submitting, setSubmitting] = useState(false)
     const [requestContact, setRequestContact] = useState('')
     const [requestEmail, setRequestEmail] = useState('')
     const [requestDetails, setRequestDetails] = useState('')
@@ -29,7 +30,9 @@ export const WorklistTaskComposer = ({ state, createItem, activeStatuses, user }
                     <form
                         className="grid gap-4"
                         onSubmit={(event) => {
-                            void createItem(event, hasClientRequest ? { contactName: requestContact.trim(), contactEmail: requestEmail.trim(), request: requestDetails.trim() } : null)
+                            if (submitting) { event.preventDefault(); return }
+                            setSubmitting(true)
+                            void createItem(event, hasClientRequest ? { contactName: requestContact.trim(), contactEmail: requestEmail.trim(), request: requestDetails.trim() } : null).finally(() => { setSubmitting(false) })
                             if (hasClientRequest) {
                                 setRequestContact('')
                                 setRequestEmail('')
@@ -92,15 +95,17 @@ export const WorklistTaskComposer = ({ state, createItem, activeStatuses, user }
                                 </select>
                             </label>
                             <label className="space-y-1.5 text-xs font-medium text-[#59665c]">
-                                Assignee
+                                Assign by email
                                 <Input
-                                    aria-label="New task assignee"
+                                    aria-label="Assignee email"
+                                    type="email"
+                                    autoComplete="email"
                                     className="h-11 rounded-xl border-[#dfe5dc] bg-[#fbfcfa] text-sm"
-                                    maxLength={120}
+                                    maxLength={254}
                                     onChange={(event) => setNewAssignee(event.target.value)}
-                                    placeholder="Name or unassigned"
+                                    placeholder="teammate@example.com"
                                     value={newAssignee}
-                                />
+                                /><span className="block text-[11px] font-normal text-[#879188]">Optional. We’ll email the assignee. New people receive a workspace invitation from the owner.</span>
                             </label>
                             <label className="space-y-1.5 text-xs font-medium text-[#59665c]">
                                 Due date
@@ -136,12 +141,13 @@ export const WorklistTaskComposer = ({ state, createItem, activeStatuses, user }
                             </Button>
                             <Button
                                 className="h-10 rounded-xl bg-[#243b2c] px-4 text-white hover:bg-[#314b37]"
+                                disabled={submitting}
                                 type="submit">
                                 <Plus
                                     aria-hidden="true"
                                     className="mr-1 size-4"
                                 />{' '}
-                                Create task
+                                {submitting ? 'Saving…' : newAssignee.trim() ? 'Create & send' : 'Create task'}
                             </Button>
                         </div>
                     </form>

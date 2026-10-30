@@ -80,12 +80,12 @@ const CalendarMonthGrid = ({ days, items, today, month, zoom, canEdit, gesture, 
             const barHeight = Math.round(22 * zoom / 100)
             const barGap = Math.round(26 * zoom / 100)
             const weekHeight = Math.max(76, dateRowHeight + weekItems.length * barGap + 4)
-            return <div className="relative grid border-b border-[#dce4da] last:border-b-0" data-calendar-week key={weekStart} style={{ gridTemplateColumns: gridColumns, minHeight: weekHeight }}>
+            return <div className="relative grid border-b border-[#dce4da] last:border-b-0" data-calendar-week={weekStart} key={weekStart} style={{ gridTemplateColumns: gridColumns, minHeight: weekHeight }}>
                     {weekDays.map((day, index) => {
                         const key = toKey(day)
                         const isToday = key === today
                         const inMonth = day.getMonth() === month
-                        return <div aria-label={`Calendar day ${dateLabel(key, { weekday: 'long', month: 'long', day: 'numeric' })}`} className={`relative border-r border-[#edf0eb] px-2 py-1.5 last:border-r-0 ${isToday ? 'bg-[#edf4e9]' : day.getDay() === 0 || day.getDay() === 6 ? 'bg-[#f6f7f4]' : ''}`} key={key} style={{ gridColumn: index + 1 }}><span className={`relative z-10 text-xs ${isToday ? 'font-semibold text-[#315b42]' : inMonth ? 'text-[#40564a]' : 'text-[#aab3ab]'}`}>{dateLabel(key, { day: 'numeric' })}</span></div>
+                        return <div aria-label={`Calendar day ${dateLabel(key, { weekday: 'long', month: 'long', day: 'numeric' })}`} className={`relative border-r border-[#edf0eb] px-2 py-1.5 last:border-r-0 ${isToday ? 'bg-[#edf4e9]' : day.getDay() === 0 || day.getDay() === 6 ? 'bg-[#f6f7f4]' : ''}`} data-calendar-date={key} key={key} style={{ gridColumn: index + 1 }}><span className={`relative z-10 text-xs ${isToday ? 'font-semibold text-[#315b42]' : inMonth ? 'text-[#40564a]' : 'text-[#aab3ab]'}`}>{dateLabel(key, { day: 'numeric' })}</span></div>
                     })}
                     {weekItems.map((item, laneIndex) => {
                         const itemStart = taskStarts(item)
@@ -129,7 +129,7 @@ export const CalendarPage = (): ReactElement => {
     if (!data.user) return <main className="grid min-h-screen place-items-center bg-[#f3f5f1] p-6 text-sm text-[#66736a]">{data.error || 'Loading your calendar…'}</main>
 
     return <ApplicationShell activeRoute="calendar" onSignOut={data.logout} signOutBusy={data.signOutBusy} user={data.user}>
-        <div className="mx-auto max-w-[1440px] px-5 pb-10 pt-7 sm:px-8 sm:pt-8">
+        <div className="calendar-page mx-auto max-w-[1440px] px-5 pb-10 pt-7 sm:px-8 sm:pt-8">
             {data.error && <p className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700" role="alert">{data.error}</p>}
             <CalendarViewPanel canEdit={data.user.role !== 'viewer'} items={data.scopedItems} loading={data.loading} onUpdate={data.updateItem} />
         </div>
@@ -179,11 +179,21 @@ export const CalendarViewPanel = ({ items, loading = false, canEdit = false, onU
         if (!current || current.pointerId !== event.pointerId) return
         timelineGestureRef.current = null
         setTimelineGesture(null)
-        if (!onUpdate || current.delta === 0) return
+        if (!onUpdate) return
         if (current.operation === 'move') {
-            onUpdate(current.itemId, { startDate: shiftCalendarKey(current.startDate, current.delta), dueDate: shiftCalendarKey(current.dueDate, current.delta) })
+            const hoveredWeek = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-calendar-week]')
+            const weekStart = hoveredWeek?.dataset.calendarWeek
+            const weekBounds = hoveredWeek?.getBoundingClientRect()
+            const dropColumn = weekStart && weekBounds && weekBounds.width > 0
+                ? Math.max(0, Math.min(6, Math.floor(((event.clientX - weekBounds.left) / weekBounds.width) * 7)))
+                : null
+            const dropDate = weekStart && dropColumn !== null ? shiftCalendarKey(weekStart, dropColumn) : null
+            const delta = dropDate ? calendarDayDifference(current.startDate, dropDate) : current.delta
+            if (delta === 0) return
+            onUpdate(current.itemId, { startDate: shiftCalendarKey(current.startDate, delta), dueDate: shiftCalendarKey(current.dueDate, delta) })
             return
         }
+        if (current.delta === 0) return
         if (current.operation === 'start') {
             onUpdate(current.itemId, { startDate: shiftCalendarKey(current.startDate, Math.min(current.delta, calendarDayDifference(current.startDate, current.dueDate))) })
             return

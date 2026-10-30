@@ -99,7 +99,7 @@ export const useWorklistBulkActions = ({
         setBulkResults([])
         const titles = new Map(items.map((item) => [item.id, item.title]))
         void updateWorkItems(ids, changes)
-            .then(({ appliedCount, results }) => {
+            .then(({ appliedCount, results, assignment, assignmentNotice }) => {
                 const appliedIds = new Set(results.filter((result) => result.outcome === 'applied').map((result) => result.itemId))
                 const unavailableIds = new Set(results.filter((result) => result.outcome === 'not_found').map((result) => result.itemId))
                 const failedIds = new Set(results.filter((result) => result.outcome === 'failed').map((result) => result.itemId))
@@ -108,7 +108,7 @@ export const useWorklistBulkActions = ({
                         .filter(
                             (item) => !unavailableIds.has(item.id) && !(changes.listId && changes.listId !== activeListId && appliedIds.has(item.id))
                         )
-                        .map((item) => (appliedIds.has(item.id) ? { ...item, ...changes } : item))
+                        .map((item) => (appliedIds.has(item.id) ? { ...item, ...changes, ...assignment } : item))
                 )
                 setSelectedIds((current) =>
                     selectionListKey === currentListKey ? new Set([...current].filter((itemId) => failedIds.has(itemId))) : current
@@ -129,7 +129,7 @@ export const useWorklistBulkActions = ({
                 const notFoundCount = results.filter((result) => result.outcome === 'not_found').length
                 const failedCount = results.filter((result) => result.outcome === 'failed').length
                 setPageNotice(
-                    `${appliedCount} applied${notFoundCount ? `; ${notFoundCount} no longer available` : ''}${failedCount ? `; ${failedCount} failed and remain selected` : ''}.`
+                    `${assignmentNotice ? `${assignmentNotice} ` : ''}${appliedCount} applied${notFoundCount ? `; ${notFoundCount} no longer available` : ''}${failedCount ? `; ${failedCount} failed and remain selected` : ''}.`
                 )
             })
             .catch((error: unknown) => {
