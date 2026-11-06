@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { summarizeDashboardItems } from '../dashboard-model.js'
+import { summarizeDashboardItems, summarizeDashboardSignals } from '../dashboard-model.js'
 import type { WorkItem } from '../model.js'
 
 const items: readonly WorkItem[] = [
@@ -28,4 +28,22 @@ void test('dashboard metrics are computed from saved items and exclude completed
         { name: 'Ayesha', count: 2 },
         { name: 'Sarah', count: 1 }
     ])
+})
+
+void test('dashboard signals identify unassigned, blocked, approval, and over-budget open work', () => {
+    const pending: WorkItem = { ...items[0]!, id: 'pending', listId: 'list-1', approvalStatus: 'pending', dependsOn: ['late'], timeSpentMinutes: 45 }
+    const changes: WorkItem = { ...items[1]!, id: 'changes', listId: 'list-1', approvalStatus: 'changes_requested', dependsOn: ['missing'], assignee: 'Unassigned', timeSpentMinutes: 35 }
+    const list = (id: string, budgetMinutes: number) => ({
+        id, name: id, description: '', spaceName: '', folderName: '', isDefault: false, archivedAt: null,
+        settings: { sortField: 'dueDate' as const, sortDirection: 'asc' as const, groupBy: 'status' as const, visibleColumns: ['status' as const],
+            columnWidths: { status: 180, priority: 130, assignee: 180, dueDate: 150 }, statuses: ['To do', 'Done'], budgetMinutes }
+    })
+    const signals = summarizeDashboardSignals([pending, changes, items[2]!, items[3]!], [list('list-1', 60), list('list-2', 0), list('list-3', 80)])
+    assert.deepEqual(signals.unassigned.map(({ id }) => id), ['changes'])
+    assert.deepEqual(signals.approvals.map(({ id }) => id), ['pending', 'changes'])
+    assert.deepEqual(signals.blocked.map(({ id }) => id), ['pending', 'changes'])
+    assert.deepEqual(signals.overBudget.map(({ list: over, trackedMinutes, budgetMinutes }) => ({ id: over.id, trackedMinutes, budgetMinutes })), [
+        { id: 'list-1', trackedMinutes: 80, budgetMinutes: 60 }
+    ])
+    assert.deepEqual(summarizeDashboardSignals([], []).overBudget, [])
 })

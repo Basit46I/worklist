@@ -121,7 +121,8 @@ export const runTruffleHogScan = async ({ workspaceRoot, policy, commandRunner =
         })
     }
 
-    if (execution.exitCode === 1 || ![0, 183].includes(execution.exitCode)) {
+    const hasUnexpectedExitCode = execution.exitCode === 1 || ![0, 183].includes(execution.exitCode)
+    if (hasUnexpectedExitCode && findings.length === 0) {
         return failure({
             scanStatus: 'scanner_error',
             version: tool.version,
@@ -148,7 +149,15 @@ export const runTruffleHogScan = async ({ workspaceRoot, policy, commandRunner =
         ...finding,
         message: `TruffleHog detected a ${finding.verificationStatus} ${finding.detector} credential in ${finding.file}${finding.line ? `:${finding.line}` : ''} (id: ${finding.identifier}).`
     }))
-    const hasFindings = issues.length > 0
+    if (hasUnexpectedExitCode) {
+        issues.push({
+            level: 'error',
+            rule: 'security-tool-failure',
+            tool: 'trufflehog',
+            message: 'TruffleHog reported findings but failed during scanning; the results may be incomplete.'
+        })
+    }
+    const hasFindings = findings.length > 0
     return {
         result: {
             name: 'secret-scan',
@@ -158,7 +167,7 @@ export const runTruffleHogScan = async ({ workspaceRoot, policy, commandRunner =
             scanStatus: hasFindings ? 'findings' : 'clean',
             exitCode: execution.exitCode,
             durationMs: execution.durationMs,
-            findingCount: issues.length
+            findingCount: findings.length
         },
         issues
     }

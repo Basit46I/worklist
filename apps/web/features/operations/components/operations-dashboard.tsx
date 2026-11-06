@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactElement } from 'react'
 import Link from 'next/link'
-import { Activity, AlertTriangle, ArrowLeft, Check, Clock3, Cpu, Database, Gauge, RefreshCw, Server, ShieldCheck, Zap } from 'lucide-react'
+import { Activity, AlertTriangle, ArrowLeft, Check, Clock3, Cpu, Database, Gauge, RefreshCw, ShieldCheck, Zap } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { fetchOperationsSnapshot, type OperationsSnapshot } from '../operations-api'
 import { OperationsLogViewer } from './operations-log-viewer'

@@ -7,7 +7,7 @@
         "dev:share": "node scripts/dev-share.mjs",
         "build": "next build",
         "start": "next start",
-        "test": "tsx --test features/worklist/tests/*.test.ts tests/integration/home-page.test.tsx tests/integration/worklist-components.test.tsx tests/environment.test.ts",
+        "test": "tsx --test features/worklist/tests/*.test.ts tests/integration/*.test.tsx tests/environment.test.ts",
         "test:e2e": "playwright test",
         "lint": "eslint .",
         "typecheck": "tsc --noEmit"

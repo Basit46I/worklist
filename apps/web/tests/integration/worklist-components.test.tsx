@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { WorkItemRow } from '@workspace/worklist-ui'
+import { AppRouterContext } from 'next/dist/shared/lib/app-router-context.shared-runtime.js'
+import { WorkItemRow, WorklistBoard, WorklistFilterBuilder } from '@workspace/worklist-ui'
 import type { WorklistTemplate } from '../../features/worklist/api.js'
 import { CalendarViewPanel } from '../../features/worklist/components/calendar-page.js'
-import { DashboardDueSoonPanel, DashboardListsPanel, DashboardStatusPanel } from '../../features/worklist/components/dashboard-panels.js'
+import { DashboardActionPanels, DashboardDataFootnote, DashboardDueSoonPanel, DashboardEmptyState, DashboardFocusPanel, DashboardListsPanel, DashboardOpenWorkPanel, DashboardStatCards, DashboardStatusPanel } from '../../features/worklist/components/dashboard-panels.js'
 import { TemplateBuilderForm } from '../../features/worklist/components/template-builder-form.js'
 import { TemplateLibraryPanel } from '../../features/worklist/components/template-library-panel.js'
 import type { TemplateBuilderState, TemplateLibraryState } from '../../features/worklist/template-dialog-types.js'
 import type { WorkItem } from '../../features/worklist/model.js'
+import type { WorkItemFilter } from '../../features/worklist/model.js'
+import { useDashboardData } from '../../features/worklist/use-dashboard-data.js'
 
 const task: WorkItem = { id: 'task-1', listId: 'list-1', title: 'Ship onboarding', description: '', status: 'In progress', priority: 'High', assignee: 'Ayesha', dueDate: '2026-10-20' }
 const template: WorklistTemplate = {
@@ -16,7 +19,8 @@ const template: WorklistTemplate = {
     tasks: [{ title: 'Confirm scope', description: '', status: 'To do', priority: 'Medium', dueDateOffsetDays: 1 }]
 }
 
-void test('calendar shows duration bars inside the month grid with resize handles', () => {
+void test('calendar shows duration bars inside the month grid with resize handles', (context) => {
+    context.mock.timers.enable({ apis: ['Date'], now: new Date('2026-10-15T12:00:00.000Z') })
     const markup = renderToStaticMarkup(<CalendarViewPanel canEdit items={[
         { ...task, startDate: '2026-10-05', dueDate: '2026-10-10' },
         { ...task, id: 'task-2', title: 'Earlier task', startDate: '2026-10-14', dueDate: '2026-10-15' }
@@ -73,6 +77,49 @@ void test('archived task rows expose Restore while active task actions use a men
     assert.match(archivedMarkup, />Restore</)
 })
 
+void test('board renders populated and empty status columns with editable and read-only task controls', () => {
+    const updates: Array<{ id: string; changes: Partial<WorkItem> }> = []
+    const addRequests: string[] = []
+    const markup = renderToStaticMarkup(<>
+        <WorklistBoard items={[{ ...task, description: 'Verify customer handoff.' }, { ...task, id: 'task-2', title: 'Unassigned task', assignee: 'Unassigned' }]} lists={[]} statuses={['In progress', 'Done']} canEdit onUpdate={(id, changes) => { updates.push({ id, changes }) }} onAddTask={(status) => { addRequests.push(status) }} />
+        <WorklistBoard items={[task]} lists={[]} statuses={['In progress', 'Done']} canEdit={false} onUpdate={() => {}} onAddTask={() => {}} />
+    </>)
+
+    assert.match(markup, /aria-label="Tasks board"/)
+    assert.match(markup, /aria-label="In progress tasks"/)
+    assert.match(markup, /aria-label="Done tasks"/)
+    assert.match(markup, /Verify customer handoff\./)
+    assert.match(markup, /Unassigned task/)
+    assert.match(markup, /disabled=""/)
+    assert.deepEqual(updates, [])
+    assert.deepEqual(addRequests, [])
+})
+
+void test('filter builder renders condition-specific controls and the empty-condition guidance', () => {
+    const statuses = ['To do', 'In progress', 'Done'] as const
+    const filters: readonly WorkItemFilter[] = [
+        { field: 'status', operator: 'equals', value: 'In progress' },
+        { field: 'priority', operator: 'equals', value: 'High' },
+        { field: 'assignee', operator: 'contains', value: 'Ayesha' },
+        { field: 'dueDate', operator: 'after', value: '2026-11-05' }
+    ]
+    const callbacks = { onStatusFilterChange: () => {}, onFilterLogicChange: () => {}, onAddFilter: () => {}, onUpdateFilter: () => {}, onRemoveFilter: () => {} }
+    const markup = renderToStaticMarkup(<>
+        <WorklistFilterBuilder activeStatuses={statuses} statusFilter="All" filters={[]} filterLogic="AND" {...callbacks} />
+        <WorklistFilterBuilder activeStatuses={statuses} statusFilter="In progress" filters={filters} filterLogic="OR" {...callbacks} />
+    </>)
+
+    assert.match(markup, /No extra conditions yet/)
+    assert.match(markup, /Filter by status/)
+    assert.match(markup, /All conditions must match/)
+    assert.match(markup, /Condition 1 field/)
+    assert.match(markup, /Condition 3 operator/)
+    assert.match(markup, /contains/)
+    assert.match(markup, /is before/)
+    assert.match(markup, /Condition 4 value/)
+    assert.match(markup, /4 of 10 conditions/)
+})
+
 void test('dashboard panels render real task and list data, including no-data and overdue states', () => {
     const markup = renderToStaticMarkup(<>
         <DashboardStatusPanel metrics={{ total: 1, open: 1, inProgress: 1, dueThisWeek: 1, overdue: 1, completed: 0, statuses: [{ name: 'In progress', count: 1 }], priorities: [{ name: 'High', count: 1 }, { name: 'Medium', count: 0 }, { name: 'Low', count: 0 }], assignees: [{ name: 'Ayesha', count: 1 }], overdueAssignees: [{ name: 'Ayesha', count: 1 }] }} />
@@ -85,6 +132,34 @@ void test('dashboard panels render real task and list data, including no-data an
     assert.match(markup, /Overdue ·/)
     assert.match(markup, /Release/)
     assert.match(markup, /Product/)
+})
+
+void test('dashboard summary and action panels show populated, empty, and permission-aware states', () => {
+    const emptyMetrics = { total: 0, open: 0, inProgress: 0, dueThisWeek: 0, overdue: 0, completed: 0, statuses: [], priorities: [], assignees: [], overdueAssignees: [] }
+    const populatedMetrics = { total: 1, open: 1, inProgress: 1, dueThisWeek: 1, overdue: 1, completed: 0, statuses: [{ name: 'In progress', count: 1 }], priorities: [{ name: 'High', count: 1 }, { name: 'Medium', count: 0 }, { name: 'Low', count: 0 }], assignees: [{ name: 'Ayesha', count: 1 }], overdueAssignees: [{ name: 'Ayesha', count: 1 }] } as const
+    const signals = { unassigned: [] as readonly WorkItem[], approvals: [task], blocked: [] as readonly WorkItem[], overBudget: [] as const }
+    const markup = renderToStaticMarkup(<>
+        <DashboardStatCards metrics={emptyMetrics} />
+        <DashboardStatCards metrics={populatedMetrics} scopeLabel="Current list" />
+        <DashboardFocusPanel items={[task]} today="2026-10-21" />
+        <DashboardFocusPanel items={[]} today="2026-10-21" />
+        <DashboardOpenWorkPanel metrics={populatedMetrics} maxOpen={1} />
+        <DashboardOpenWorkPanel metrics={emptyMetrics} maxOpen={0} />
+        <DashboardActionPanels signals={signals} />
+        <DashboardEmptyState canCreate />
+        <DashboardEmptyState canCreate={false} />
+        <DashboardDataFootnote />
+    </>)
+
+    assert.match(markup, /No tasks yet/)
+    assert.match(markup, /Current list/)
+    assert.match(markup, /Keep the important work moving/)
+    assert.match(markup, /Nothing needs attention in this view/)
+    assert.match(markup, /Overdue by owner/)
+    assert.match(markup, /No open work in this scope/)
+    assert.match(markup, /Approval queue/)
+    assert.match(markup, /Add your first task/)
+    assert.match(markup, /Live workspace data/)
 })
 
 void test('template library renders selected template preview, tasks, workflow, and list fields', () => {
@@ -105,6 +180,22 @@ void test('template builder exposes the status and task rules through labeled co
     assert.match(markup, /One status per line/)
     assert.match(markup, /aria-label="Template task titles"/)
     assert.match(markup, /up to 50/)
+})
+
+void test('dashboard data hook exposes a stable loading state before its client request starts', () => {
+    const router = { back() {}, forward() {}, refresh() {}, push() {}, replace() {}, prefetch: async () => {} }
+    const Probe = () => {
+        const data = useDashboardData()
+        return <output>{JSON.stringify({ user: data.user, lists: data.lists.length, items: data.items.length, scope: data.scope, loading: data.loading,
+            signOutBusy: data.signOutBusy, error: data.error, total: data.metrics.total, open: data.metrics.open, dueSoon: data.dueSoon.length,
+            greeting: data.greeting, myTasksOnly: data.myTasksOnly, overBudget: data.signals.overBudget.length })}</output>
+    }
+    const markup = renderToStaticMarkup(<AppRouterContext.Provider value={router as never}><Probe /></AppRouterContext.Provider>)
+    assert.match(markup, /&quot;scope&quot;:&quot;all&quot;/)
+    assert.match(markup, /&quot;loading&quot;:true/)
+    assert.match(markup, /&quot;lists&quot;:0/)
+    assert.match(markup, /&quot;items&quot;:0/)
+    assert.match(markup, /&quot;total&quot;:0/)
 })
 
 const libraryState = (): TemplateLibraryState => ({

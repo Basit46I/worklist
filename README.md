@@ -106,6 +106,20 @@ pnpm run validate    # complete validation pipeline
 
 `pnpm run scan` contacts the configured package registry for the dependency audit and uses the repository-managed TruffleHog release for secret detection.
 
+### Test and coverage notes
+
+Workspace unit, component, and integration tests use the project-declared Node.js test runner through `tsx`; the control-plane suite uses Node.js `node:test`. Coverage is reported by Node.js V8 coverage, not Jest. The 2026-11-06 snapshot is:
+
+| Workspace | Lines | Branches | Functions | Result |
+| --- | ---: | ---: | ---: | --- |
+| API | 86.62% | 82.59% | 73.72% | 76 passed; 3 optional provider tests skipped |
+| Web app | 85.03% | 85.37% | 68.56% | 16 passed in the latest individual run |
+| Logging | 93.06% | 83.33% | 62.50% | 2 passed |
+| UI package | 86.33% | 89.91% | 67.23% | 6 passed |
+| Codebase control plane | 85.13% | 77.61% | 84.62% | 115 passed |
+
+Skipped API tests need MongoDB/Redis providers; they are not counted as passing tests. Run `pnpm test` for the workspace unit/component/integration and control-plane suites. Run `node codebase/cli/repo.mjs run web:test:e2e` separately for the Playwright browser journey; it needs the E2E account environment variables and a running target app. These percentages are a point-in-time snapshot and should be regenerated after code changes.
+
 ## Project documentation
 
 - [Project guide and implementation status](.project/worklist/README.md)

@@ -2,6 +2,7 @@ export { WorklistAuthBrand } from './worklist-auth-brand.js'
 export { WorklistAuthScreen } from './worklist-auth-screen.js'
 export { WorklistBoard } from './worklist-board.js'
 export { WorklistControls } from './worklist-controls.js'
+export { WorklistFilterBuilder } from './worklist-filter-builder.js'
 export { WorklistShell } from './worklist-shell.js'
 export { WorkItemRow } from './worklist-task-row.js'
 export { WorklistTable } from './worklist-task-views.js'
@@ -9,4 +10,5 @@ export { columnLabels, dateInOneWeek, formatDate, initialsOf, isCompletedStatus,
 
 export type { WorklistAuthLinks, WorklistAuthScreenProps } from './worklist-auth-screen.js'
 export type { WorklistControlsProps } from './worklist-controls.js'
+export type { WorklistFilterBuilderProps } from './worklist-filter-builder.js'
 export type { WorklistShellContext, WorklistShellLinkProps, WorklistShellList, WorklistShellProps, WorklistWorkspaceAction } from './worklist-shell.js'

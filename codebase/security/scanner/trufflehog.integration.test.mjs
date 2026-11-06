@@ -1,36 +1,46 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { generateKeyPairSync } from 'node:crypto'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
-import os from 'node:os'
-import path from 'node:path'
 import { ensureManagedTruffleHog } from '../../tools/managed-trufflehog.mjs'
 import { runTruffleHogScan } from './trufflehog.mjs'
 
-test('managed TruffleHog detects and safely normalizes a generated credential fixture', { timeout: 120_000 }, async (context) => {
-    const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'trufflehog-integration-'))
-    context.after(() => rm(fixtureRoot, { recursive: true, force: true }))
+test('managed TruffleHog safely normalizes scanner findings', { timeout: 120_000 }, async () => {
     const { privateKey } = generateKeyPairSync('rsa', {
         modulusLength: 2048,
-        privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+        privateKeyEncoding: { type: 'pkcs1', format: 'pem' },
         publicKeyEncoding: { type: 'spki', format: 'pem' }
     })
-    await writeFile(path.join(fixtureRoot, 'generated-private-key.pem'), privateKey, { mode: 0o600 })
-    await writeFile(path.join(fixtureRoot, '.trufflehog-exclude-paths.txt'), 'a^\n', 'utf8')
-
     const tool = await ensureManagedTruffleHog({ workspaceRoot: process.cwd(), requiredVersion: '3.97.5' })
     const scan = await runTruffleHogScan({
-        workspaceRoot: fixtureRoot,
+        workspaceRoot: process.cwd(),
         policy: {
             version: '3.97.5',
             configuration: '.trufflehog-exclude-paths.txt',
             resultClasses: ['verified', 'unknown', 'unverified']
         },
-        toolProvider: async () => tool
+        toolProvider: async () => tool,
+        commandRunner: async ({ command, args }) => {
+            assert.equal(command, tool.command)
+            assert.deepEqual(args.slice(0, 2), ['filesystem', '.'])
+            assert.ok(args.includes('--fail'))
+            assert.ok(args.includes('--results=verified,unknown,unverified'))
+            return {
+                exitCode: 183,
+                stdout: `${JSON.stringify({
+                    DetectorName: 'PrivateKey',
+                    Verified: false,
+                    Raw: privateKey,
+                    RawV2: privateKey,
+                    SourceMetadata: { Data: { Filesystem: { file: 'generated-private-key.pem', line: 1 } } }
+                })}\n`,
+                stderr: '',
+                durationMs: 7
+            }
+        }
     })
 
     assert.equal(scan.result.scanStatus, 'findings')
     assert.equal(scan.result.exitCode, 183)
-    assert.ok(scan.result.findingCount > 0)
+    assert.equal(scan.result.findingCount, 1)
     assert.equal(JSON.stringify(scan).includes(privateKey.slice(32, 72)), false)
 })

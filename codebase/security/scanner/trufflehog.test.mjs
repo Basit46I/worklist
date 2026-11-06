@@ -81,6 +81,23 @@ test('maps scanner errors and finding exit codes without leaking stderr', async 
     assert.equal(noRecords.result.scanStatus, 'invalid_output')
 })
 
+test('preserves normalized findings when TruffleHog reports a finding and a scan error', async () => {
+    const rawSecret = 'partial-scan-sensitive-value'
+    const scan = await runTruffleHogScan({
+        workspaceRoot: process.cwd(),
+        policy,
+        toolProvider,
+        commandRunner: async () => ({ exitCode: 1, stdout: finding({ raw: rawSecret }), stderr: 'scan error', durationMs: 4 })
+    })
+
+    assert.equal(scan.result.status, 'failed')
+    assert.equal(scan.result.scanStatus, 'findings')
+    assert.equal(scan.result.findingCount, 1)
+    assert.ok(scan.issues.some(({ rule }) => rule === 'secret-detected'))
+    assert.ok(scan.issues.some(({ rule }) => rule === 'security-tool-failure'))
+    assert.equal(JSON.stringify(scan).includes(rawSecret), false)
+})
+
 test('fails closed on malformed JSON output', async () => {
     const scan = await runTruffleHogScan({
         workspaceRoot: process.cwd(),
